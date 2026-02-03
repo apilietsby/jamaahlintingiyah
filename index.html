@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Toko Online System</title>
+    <title>TOKONEMBAHMO System</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
@@ -31,10 +31,10 @@
         <div class="max-w-6xl mx-auto flex justify-between items-center">
             
             <div class="flex items-center gap-2 cursor-pointer" onclick="window.location.reload()">
-                <div class="w-8 h-8 bg-gradient-to-tr from-emerald-400 to-cyan-500 rounded-lg flex items-center justify-center text-black font-bold shadow-lg">
-                    <i class="fa-solid fa-store"></i>
+                <div class="w-8 h-8 bg-gradient-to-tr from-emerald-500 to-green-400 rounded-lg flex items-center justify-center text-white font-bold shadow-lg">
+                    <i class="fa-solid fa-leaf"></i>
                 </div>
-                <h1 class="font-bold text-lg text-white tracking-wide">Toko<span class="text-emerald-400">Online</span></h1>
+                <h1 class="font-bold text-lg text-white tracking-wide">TOKONEMBAHMO</h1>
             </div>
             
             <div class="flex items-center gap-3">
@@ -44,11 +44,9 @@
 
                 <div id="user-menu" class="hidden flex items-center gap-2">
                     <span id="user-role-badge" class="text-[10px] uppercase font-bold px-2 py-0.5 rounded bg-gray-700 text-gray-300">USER</span>
-                    
                     <button id="btn-share" onclick="copyShopLink()" class="hidden flex items-center gap-2 bg-emerald-500 text-white border border-emerald-400/50 px-3 py-1.5 rounded-full text-xs font-bold shadow hover:bg-emerald-400 transition active:scale-95">
                         <i class="fa-solid fa-share-nodes"></i> <span class="hidden sm:inline">Bagikan</span>
                     </button>
-
                     <button onclick="handleLogout()" class="w-8 h-8 flex items-center justify-center rounded-full bg-red-500/10 text-red-400 border border-red-500/20 hover:bg-red-500 hover:text-white transition" title="Keluar">
                         <i class="fa-solid fa-power-off text-xs"></i>
                     </button>
@@ -103,7 +101,6 @@
                     <div class="space-y-3">
                         <input type="number" id="inp-price" required placeholder="Harga (Rp)" class="w-full bg-black/50 border border-white/10 rounded p-2 text-sm text-white">
                         <textarea id="inp-desc" rows="2" placeholder="Deskripsi..." class="w-full bg-black/50 border border-white/10 rounded p-2 text-sm text-white"></textarea>
-                        
                         <div class="bg-black/30 p-2 rounded border border-white/5">
                             <div class="flex justify-between items-center mb-1">
                                 <span class="text-xs text-gray-400">Varian</span>
@@ -115,7 +112,6 @@
                     <button type="submit" id="btn-submit-prod" class="col-span-1 md:col-span-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2 rounded transition">Simpan Produk</button>
                 </form>
             </div>
-
             <div id="admin-product-list" class="space-y-2"></div>
         </div>
 
@@ -164,7 +160,7 @@
             </div>
             <div class="p-5 overflow-y-auto">
                 <div class="flex gap-4 mb-4">
-                    <img id="modal-img" src="" class="w-20 h-20 rounded-xl object-cover border border-white/10">
+                    <img id="modal-img" src="" class="w-20 h-20 rounded-xl object-cover border border-white/10 shrink-0">
                     <div>
                         <span id="modal-code" class="text-[9px] font-bold bg-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded">CODE</span>
                         <h4 id="modal-name" class="font-bold text-white leading-tight mt-2 mb-1 text-sm"></h4>
@@ -204,20 +200,17 @@
         const SUPABASE_KEY = 'sb_publishable_vQfgDnxOeq0F6hykqwUI_g_FxWZYRCP'; 
         const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        // State Global
-        let currentUser = null; // Object user yang login (isi: username, role, fullname)
+        let currentUser = null; 
         let allProducts = [];
-        let isEditingId = null; // ID produk yg sedang diedit admin
+        let isEditingId = null; 
         let existingImageUrl = "";
-        let activeProductForLink = null; // ID produk yg sedang diedit link oleh affiliator
+        let activeProductForLink = null; 
 
-        // === INIT ===
         window.addEventListener('load', async () => {
-            checkLoginSession(); // Cek apakah ada user tersimpan
-            await loadData();    // Muat data produk
+            checkLoginSession(); 
+            await loadData();    
         });
 
-        // === LOGIC TAMPILAN (ROUTER SEDERHANA) ===
         function updateUI() {
             const catalogView = document.getElementById('view-catalog');
             const adminView = document.getElementById('view-admin');
@@ -226,7 +219,6 @@
             const roleBadge = document.getElementById('user-role-badge');
             const btnShare = document.getElementById('btn-share');
 
-            // Reset UI
             catalogView.classList.remove('hidden');
             adminView.classList.add('hidden');
             btnLogin.classList.remove('hidden');
@@ -234,26 +226,21 @@
             document.querySelectorAll('.edit-btn-affiliate').forEach(el => el.classList.add('hidden'));
 
             if (currentUser) {
-                // SUDAH LOGIN
                 btnLogin.classList.add('hidden');
                 userMenu.classList.remove('hidden');
                 roleBadge.innerText = currentUser.role;
 
                 if (currentUser.role === 'admin') {
-                    // MODE ADMIN: Sembunyikan katalog, Tampilkan Dashboard
                     catalogView.classList.add('hidden');
                     adminView.classList.remove('hidden');
                     roleBadge.className = "text-[10px] uppercase font-bold px-2 py-0.5 rounded bg-red-600 text-white";
                     btnShare.classList.add('hidden');
-                    loadAdminData(); // Muat data khusus admin
+                    loadAdminData(); 
                 } 
                 else {
-                    // MODE AFFILIATE: Tampilkan katalog + Tombol Edit
                     roleBadge.className = "text-[10px] uppercase font-bold px-2 py-0.5 rounded bg-emerald-600 text-white";
                     btnShare.classList.remove('hidden');
                     document.querySelectorAll('.edit-btn-affiliate').forEach(el => el.classList.remove('hidden'));
-                    
-                    // Update URL Hash
                     window.location.hash = `/${currentUser.username}`;
                     document.getElementById('shop-info').classList.remove('hidden');
                     document.getElementById('shop-owner').innerText = currentUser.username;
@@ -261,16 +248,12 @@
             }
         }
 
-        // === AUTHENTICATION ===
-        function toggleLoginModal() {
-            document.getElementById('login-modal').classList.toggle('hidden');
-        }
+        function toggleLoginModal() { document.getElementById('login-modal').classList.toggle('hidden'); }
 
         async function handleLogin(e) {
             e.preventDefault();
             const username = document.getElementById('login-username').value.toLowerCase();
             const pin = document.getElementById('login-pin').value;
-
             const { data, error } = await sb.from('affiliators').select('*').eq('username', username).eq('pin', pin).single();
 
             if (data) {
@@ -278,7 +261,6 @@
                 localStorage.setItem('tobako_user', JSON.stringify(data));
                 toggleLoginModal();
                 updateUI();
-                alert(`Selamat datang, ${data.full_name}!`);
             } else {
                 alert('Login Gagal. Cek Username/PIN.');
             }
@@ -295,26 +277,20 @@
 
         function checkLoginSession() {
             const saved = localStorage.getItem('tobako_user');
-            if (saved) {
-                currentUser = JSON.parse(saved);
-                updateUI();
-            }
+            if (saved) { currentUser = JSON.parse(saved); updateUI(); }
         }
 
-        // === DATA LOADING (KATALOG) ===
         async function loadData() {
             const container = document.getElementById('view-catalog');
             let { data: products } = await sb.from('products').select('*').order('sort_order', { ascending: true });
             
             allProducts = products || [];
             
-            // Ambil Link Khusus jika mode affiliator
             let customLinks = [];
             if (currentUser && currentUser.role !== 'admin') {
                 const { data } = await sb.from('affiliate_links').select('*').eq('affiliator_username', currentUser.username);
                 customLinks = data || [];
             } else if (window.location.hash.startsWith('#/')) {
-                // Jika pengunjung melihat toko affiliator (tanpa login)
                 const owner = window.location.hash.replace('#/', '');
                 const { data } = await sb.from('affiliate_links').select('*').eq('affiliator_username', owner);
                 customLinks = data || [];
@@ -323,12 +299,16 @@
             }
 
             container.innerHTML = '';
+            if (allProducts.length === 0) {
+                container.innerHTML = '<div class="col-span-2 text-center text-gray-500 mt-10 p-4 glass rounded-xl">Belum ada produk.</div>';
+                return;
+            }
+
             allProducts.forEach(prod => {
                 const linkData = customLinks.find(l => l.product_id === prod.id);
                 const finalLink = linkData ? linkData.custom_link : prod.default_link;
-                prod.final_link = finalLink; // Simpan untuk popup
+                prod.final_link = finalLink; 
 
-                // Render Kartu Produk
                 const card = document.createElement('div');
                 card.className = "glass rounded-2xl overflow-hidden relative flex flex-col h-full group hover:bg-white/5 transition";
                 card.innerHTML = `
@@ -348,11 +328,9 @@
                 container.appendChild(card);
             });
             
-            // Re-apply visibility check setelah render
             if(currentUser) updateUI();
         }
 
-        // === ADMIN FUNCTIONS ===
         function switchAdminTab(tab) {
             if(tab === 'products') {
                 document.getElementById('panel-products').classList.remove('hidden');
@@ -364,12 +342,11 @@
                 document.getElementById('panel-affiliates').classList.remove('hidden');
                 document.getElementById('tab-products').className = "px-4 py-2 bg-gray-800 text-gray-400 rounded-t-lg text-sm font-bold hover:bg-gray-700";
                 document.getElementById('tab-affiliates').className = "px-4 py-2 bg-emerald-600 text-white rounded-t-lg text-sm font-bold";
-                fetchAffiliates(); // Load data saat tab dibuka
+                fetchAffiliates(); 
             }
         }
 
         async function loadAdminData() {
-            // Load Produk ke Tabel Admin
             const container = document.getElementById('admin-product-list');
             let { data: products } = await sb.from('products').select('*').order('sort_order', { ascending: true });
             
@@ -395,13 +372,14 @@
             const tbody = document.getElementById('affiliate-table-body');
             const { data } = await sb.from('affiliators').select('*').order('id', {ascending: true});
             tbody.innerHTML = '';
-            data.forEach(user => {
-                const delBtn = user.role === 'admin' ? '' : `<button onclick="deleteAffiliate(${user.id})" class="text-red-400 hover:text-white"><i class="fa-solid fa-trash"></i></button>`;
-                tbody.innerHTML += `<tr><td class="py-2">${user.full_name}</td><td>${user.username}</td><td>${user.pin}</td><td>${user.role}</td><td>${delBtn}</td></tr>`;
-            });
+            if (data) {
+                data.forEach(user => {
+                    const delBtn = user.role === 'admin' ? '' : `<button onclick="deleteAffiliate(${user.id})" class="text-red-400 hover:text-white"><i class="fa-solid fa-trash"></i></button>`;
+                    tbody.innerHTML += `<tr><td class="py-2">${user.full_name}</td><td>${user.username}</td><td>${user.pin}</td><td>${user.role}</td><td>${delBtn}</td></tr>`;
+                });
+            }
         }
 
-        // --- CRUD AFFILIATE ---
         document.getElementById('affiliateForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const { error } = await sb.from('affiliators').insert({
@@ -420,26 +398,21 @@
             }
         }
 
-        // --- CRUD PRODUK (Admin) ---
-        // (Logic sama seperti sebelumnya, disederhanakan)
         document.getElementById('productForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            // ... Logic simpan produk ...
-            // Agar kode tidak terlalu panjang di chat, logika ini sama persis dengan yang sebelumnya
-            // Silakan copy logika submit dari admin.html sebelumnya ke sini jika perlu detailnya.
-            // Intinya: Cek isEditingId -> Update atau Insert -> Reset Form -> loadAdminData()
-            
-            // SIMULASI SIMPAN (Karena kode panjang):
+            const btn = document.getElementById('btn-submit-prod');
+            const originalText = btn.innerText;
+            btn.disabled = true;
+            btn.innerText = "Memproses...";
+
             const payload = {
                 sort_order: document.getElementById('inp-sort').value || 999,
                 product_code: document.getElementById('inp-code').value,
                 name: document.getElementById('inp-name').value,
                 price: document.getElementById('inp-price').value,
                 description: document.getElementById('inp-desc').value,
-                // ... handle image ...
             };
-            
-            // Upload Image Logic
+
             const fileInput = document.getElementById('inp-file');
             let imageUrl = existingImageUrl;
             if (fileInput.files.length > 0) {
@@ -450,6 +423,12 @@
                  imageUrl = data.publicUrl;
             }
             payload.image_url = imageUrl;
+            
+            let variants = [];
+            document.querySelectorAll('.variant-input').forEach(inp => {
+                if(inp.value.trim()) variants.push({ name: inp.value.trim() });
+            });
+            payload.variants = JSON.stringify(variants);
 
             if(isEditingId) await sb.from('products').update(payload).eq('id', isEditingId);
             else await sb.from('products').insert(payload);
@@ -457,6 +436,8 @@
             alert('Disimpan');
             resetProductForm();
             loadAdminData();
+            btn.disabled = false;
+            btn.innerText = originalText;
         });
 
         function editProduct(prod) {
@@ -477,6 +458,12 @@
                 document.getElementById('preview-img').classList.remove('hidden');
                 document.getElementById('preview-placeholder').classList.add('hidden');
             }
+
+            const container = document.getElementById('variant-container');
+            container.innerHTML = '';
+            let variants = [];
+            try { variants = typeof prod.variants === 'string' ? JSON.parse(prod.variants) : prod.variants; } catch(e){}
+            if(variants && variants.length) variants.forEach(v => addVariantInput(v.name));
         }
         
         function resetProductForm() {
@@ -486,20 +473,26 @@
             document.getElementById('btn-submit-prod').innerText = "Simpan Produk";
             document.getElementById('preview-img').classList.add('hidden');
             document.getElementById('preview-placeholder').classList.remove('hidden');
+            document.getElementById('variant-container').innerHTML = '';
         }
         
         async function deleteProduct(id) {
-            if(confirm('Hapus produk?')) {
-                await sb.from('products').delete().eq('id', id);
-                loadAdminData();
-            }
+            if(confirm('Hapus produk?')) { await sb.from('products').delete().eq('id', id); loadAdminData(); }
         }
         
-        async function quickSort(id, val) {
-            await sb.from('products').update({sort_order: val}).eq('id', id);
+        async function quickSort(id, val) { await sb.from('products').update({sort_order: val}).eq('id', id); }
+
+        function addVariantInput(value = '') {
+            const container = document.getElementById('variant-container');
+            const div = document.createElement('div');
+            div.className = 'flex gap-2';
+            div.innerHTML = `
+                <input type="text" value="${value}" placeholder="Varian" class="variant-input w-full bg-gray-900 border border-gray-600 rounded p-1 text-xs text-white">
+                <button type="button" onclick="this.parentElement.remove()" class="text-red-400 hover:text-red-300 px-2"><i class="fa-solid fa-trash"></i></button>
+            `;
+            container.appendChild(div);
         }
 
-        // === FITUR AFFILIATOR (EDIT LINK & SHARE) ===
         function openEditLinkModal(id, name) {
             activeProductForLink = id;
             document.getElementById('edit-product-name').innerText = name;
@@ -516,7 +509,7 @@
             }, { onConflict: 'affiliator_username, product_id' });
             alert('Link disimpan');
             document.getElementById('edit-modal').classList.add('hidden');
-            loadData(); // Reload katalog untuk update link
+            loadData(); 
         }
 
         function openDetailPopup(id) {
@@ -540,7 +533,6 @@
             setTimeout(() => t.classList.add('opacity-0'), 2000);
         }
         
-        // CSV Import Handler
         document.getElementById('csv-input').addEventListener('change', function(e) {
             const file = e.target.files[0];
             if (!file) return;
@@ -563,7 +555,6 @@
                 }
             });
         });
-
     </script>
 </body>
 </html>
