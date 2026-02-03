@@ -3,21 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Katalog Eksklusif</title>
+    <title>Sobat Mbahmo</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
 
     <style>
         body { font-family: 'Plus Jakarta Sans', sans-serif; }
         
-        /* Background Blob Animation */
-        .blob { position: absolute; filter: blur(80px); z-index: -1; opacity: 0.6; }
-        .blob-1 { top: 0; left: 0; width: 300px; height: 300px; background: #064e3b; border-radius: 50%; }
-        .blob-2 { bottom: 0; right: 0; width: 300px; height: 300px; background: #065f46; border-radius: 50%; }
-
         /* Glassmorphism Utilities */
         .glass {
             background: rgba(255, 255, 255, 0.05);
@@ -34,7 +28,6 @@
         .modal-enter { animation: modalPop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
         @keyframes modalPop { from { opacity: 0; transform: scale(0.9) translateY(20px); } to { opacity: 1; transform: scale(1) translateY(0); } }
         
-        /* Hide scrollbar for clean look */
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: #022c22; }
         ::-webkit-scrollbar-thumb { background: #065f46; border-radius: 10px; }
@@ -55,9 +48,11 @@
                 </div>
                 <h1 class="font-bold text-lg text-white tracking-wide">Jamaah<span class="text-emerald-400">Lintingiyah</span></h1>
             </div>
-            <button onclick="toggleLoginModal()" class="text-xs bg-white/10 hover:bg-white/20 border border-white/10 px-3 py-1.5 rounded-full transition text-emerald-100 backdrop-blur-md">
-                <i class="fa-solid fa-user-gear mr-1"></i> Admin
+            
+            <button onclick="toggleLoginModal()" class="w-8 h-8 flex items-center justify-center rounded-full text-white/10 hover:text-emerald-400 hover:bg-white/5 transition duration-300" title="Affiliator Login">
+                <i class="fa-solid fa-user-gear"></i>
             </button>
+            
         </div>
         <div id="shop-info" class="max-w-md mx-auto text-[10px] text-emerald-400 mt-1 hidden text-center tracking-widest uppercase">
             Store ID: <span id="shop-owner" class="font-bold text-white"></span>
@@ -99,7 +94,7 @@
                         <div>
                             <h5 class="text-yellow-500 font-bold text-xs mb-1 uppercase tracking-wider">Info Penting</h5>
                             <p class="text-[10px] text-gray-300 leading-relaxed">
-                                Demi keamanan akun, nama/foto produk di TikTok mungkin <b>disensor</b>.
+                                Demi keamanan akun toko, nama/foto produk di TikTok <b>disensor</b> Demi kelancaran Transaksi kita bersama.
                             </p>
                         </div>
                     </div>
@@ -251,7 +246,6 @@
             checkLoginState(); 
         }
 
-        // --- POPUP LOGIC ---
         function openDetailPopup(productId) {
             const prod = allProducts.find(p => p.id === productId);
             if (!prod) return;
@@ -283,7 +277,6 @@
             document.getElementById('detail-modal').classList.add('hidden');
         }
 
-        // --- AUTH & EDIT LOGIC ---
         function toggleLoginModal() {
             document.getElementById('login-modal').classList.toggle('hidden');
         }
