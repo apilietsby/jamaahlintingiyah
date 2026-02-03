@@ -71,9 +71,11 @@
 
     <script>
         // --- KONFIGURASI SUPABASE ---
-        const SUPABASE_URL = 'https://qqyggahvwtysefbmpoqr.supabase.co'; // GANTI INI
-        const SUPABASE_KEY = 'sb_publishable_vQfgDnxOeq0F6hykqwUI_g_FxWZYRCP'; // GANTI INI (ANON KEY)
-        const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+        const SUPABASE_URL = 'https://qqyggahvwtysefbmpoqr.supabase.co'; 
+        const SUPABASE_KEY = 'sb_publishable_vQfgDnxOeq0F6hykqwUI_g_FxWZYRCP'; // PASTIKAN KEY BENAR
+
+        // PERBAIKAN: Ganti nama variabel jadi 'sb' dan gunakan 'supabase.createClient'
+        const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
         // --- PREVIEW GAMBAR ---
         document.getElementById('inp-file').addEventListener('change', function(e) {
@@ -130,26 +132,28 @@
                 // 3. Upload Gambar (Jika ada)
                 if (fileInput.files.length > 0) {
                     const file = fileInput.files[0];
+                    
+                    // Sanitasi nama file biar tidak aneh-aneh
                     const fileExt = file.name.split('.').pop();
-                    const fileName = `${Date.now()}.${fileExt}`; // Nama file unik
-                    const filePath = `${fileName}`;
-
-                    const { error: uploadError } = await supabase.storage
+                    const fileName = `${Date.now()}.${fileExt}`; 
+                    
+                    // Gunakan 'sb' bukan 'supabase'
+                    const { error: uploadError } = await sb.storage
                         .from('product-images')
-                        .upload(filePath, file);
+                        .upload(fileName, file);
 
                     if (uploadError) throw uploadError;
 
                     // Ambil Public URL
-                    const { data } = supabase.storage
+                    const { data } = sb.storage
                         .from('product-images')
-                        .getPublicUrl(filePath);
+                        .getPublicUrl(fileName);
                     
                     imageUrl = data.publicUrl;
                 }
 
-                // 4. Simpan ke Database
-                const { error: insertError } = await supabase
+                // 4. Simpan ke Database (Gunakan 'sb')
+                const { error: insertError } = await sb
                     .from('products')
                     .insert({
                         name: name,
@@ -157,15 +161,16 @@
                         description: desc,
                         default_link: defaultLink,
                         image_url: imageUrl,
-                        variants: variants
+                        variants: JSON.stringify(variants) // Pastikan simpan sbg string JSON
                     });
 
                 if (insertError) throw insertError;
 
                 alert('Berhasil! Produk telah ditambahkan.');
-                location.reload(); // Refresh halaman
+                location.reload(); 
 
             } catch (err) {
+                console.error(err);
                 alert('Terjadi kesalahan: ' + err.message);
             } finally {
                 setLoading(false);
