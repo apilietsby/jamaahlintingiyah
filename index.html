@@ -6,34 +6,45 @@
     <title>TOKONEMBAHMO System</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
+    
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
+    
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
 
     <style>
-        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #020617; color: #e2e8f0; margin: 0; padding: 0; }
+        body { 
+            font-family: 'Plus Jakarta Sans', sans-serif; 
+            background-color: #020617; 
+            color: #e2e8f0;
+            margin: 0; padding: 0;
+        }
         .hidden { display: none !important; }
+        
         .glass { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); }
         .glass-header { background: rgba(6, 78, 59, 0.95); backdrop-filter: blur(10px); border-bottom: 1px solid rgba(255, 255, 255, 0.1); position: sticky; top: 0; z-index: 50; }
-        input[type="file"]::file-selector-button { border-radius: 4px; padding: 0 10px; height: 30px; cursor: pointer; background-color: #374151; border: 1px solid rgba(255,255,255,0.1); color: white; margin-right: 10px; }
+        
+        /* HILANGKAN PANAH INPUT NUMBER (SPINNER) */
+        /* Chrome, Safari, Edge, Opera */
+        input[type=number]::-webkit-outer-spin-button,
+        input[type=number]::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        /* Firefox */
+        input[type=number] {
+            -moz-appearance: textfield;
+        }
+
+        input[type="file"]::file-selector-button {
+            border-radius: 4px; padding: 0 10px; height: 30px; cursor: pointer;
+            background-color: #374151; border: 1px solid rgba(255,255,255,0.1); color: white; margin-right: 10px;
+        }
+
         ::-webkit-scrollbar { width: 4px; }
         ::-webkit-scrollbar-track { background: #022c22; }
         ::-webkit-scrollbar-thumb { background: #065f46; border-radius: 10px; }
-
-        /* CSS KHUSUS UNTUK INPUT GESER (SCRUBBER) */
-        .scrub-input {
-            cursor: ns-resize; /* Kursor panah atas-bawah */
-            user-select: none; /* Supaya teks tidak terblok saat digeser */
-            -moz-appearance: textfield;
-        }
-        .scrub-input::-webkit-outer-spin-button,
-        .scrub-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
-        
-        .scrub-active {
-            background-color: #059669 !important; /* Hijau saat ditarik */
-            cursor: grabbing !important;
-        }
     </style>
 </head>
 <body class="min-h-screen relative overflow-x-hidden">
@@ -54,12 +65,20 @@
                     <p class="text-[9px] text-emerald-200 uppercase tracking-widest hidden sm:block">Authentic Tobacco & Accessories</p>
                 </div>
             </div>
+            
             <div class="flex items-center gap-3">
-                <button id="btn-login-trigger" onclick="toggleLoginModal()" class="w-9 h-9 flex items-center justify-center rounded-full bg-white/10 text-white hover:bg-emerald-500 transition border border-white/10" title="Login Area"><i class="fa-solid fa-right-to-bracket text-sm"></i></button>
+                <button id="btn-login-trigger" onclick="toggleLoginModal()" class="w-9 h-9 flex items-center justify-center rounded-full bg-white/10 text-white hover:bg-emerald-500 transition border border-white/10" title="Login Area">
+                    <i class="fa-solid fa-right-to-bracket text-sm"></i>
+                </button>
+
                 <div id="user-menu" class="hidden flex items-center gap-2">
                     <span id="user-role-badge" class="text-[10px] uppercase font-bold px-2 py-1 rounded bg-gray-800 text-gray-300 border border-gray-600">USER</span>
-                    <button id="btn-share" onclick="copyShopLink()" class="hidden flex items-center gap-2 bg-emerald-500 text-white border border-emerald-400/50 px-3 py-1.5 rounded-full text-xs font-bold shadow hover:bg-emerald-400 transition active:scale-95"><i class="fa-solid fa-share-nodes"></i> <span class="hidden sm:inline">Share</span></button>
-                    <button onclick="handleLogout()" class="w-8 h-8 flex items-center justify-center rounded-full bg-red-500/20 text-red-400 border border-red-500/30 hover:bg-red-500 hover:text-white transition"><i class="fa-solid fa-power-off text-xs"></i></button>
+                    <button id="btn-share" onclick="copyShopLink()" class="hidden flex items-center gap-2 bg-emerald-500 text-white border border-emerald-400/50 px-3 py-1.5 rounded-full text-xs font-bold shadow hover:bg-emerald-400 transition active:scale-95">
+                        <i class="fa-solid fa-share-nodes"></i> <span class="hidden sm:inline">Share</span>
+                    </button>
+                    <button onclick="handleLogout()" class="w-8 h-8 flex items-center justify-center rounded-full bg-red-500/20 text-red-400 border border-red-500/30 hover:bg-red-500 hover:text-white transition" title="Keluar">
+                        <i class="fa-solid fa-power-off text-xs"></i>
+                    </button>
                 </div>
             </div>
         </div>
@@ -76,6 +95,7 @@
     </div>
 
     <div id="view-admin" class="hidden max-w-5xl mx-auto px-4 pt-6 pb-24 relative z-10">
+        
         <div class="flex gap-2 border-b border-gray-700 mb-6">
             <button onclick="switchAdminTab('products')" id="tab-products" class="flex-1 px-4 py-3 bg-emerald-600 text-white rounded-t-lg text-xs font-bold uppercase tracking-wider">Produk</button>
             <button onclick="switchAdminTab('affiliates')" id="tab-affiliates" class="flex-1 px-4 py-3 bg-gray-800 text-gray-400 rounded-t-lg text-xs font-bold uppercase tracking-wider hover:bg-gray-700">Affiliator</button>
@@ -87,10 +107,13 @@
                     <h2 class="text-sm font-bold text-white uppercase"><span id="form-title">Input Produk</span></h2>
                     <div class="flex gap-2">
                         <input type="file" id="csv-input" accept=".csv" class="hidden">
-                        <button onclick="document.getElementById('csv-input').click()" class="bg-blue-600/20 text-blue-400 border border-blue-500/30 hover:bg-blue-600 hover:text-white px-3 py-1.5 rounded text-[10px] font-bold transition flex items-center gap-1"><i class="fa-solid fa-file-csv"></i> Import</button>
+                        <button onclick="document.getElementById('csv-input').click()" class="bg-blue-600/20 text-blue-400 border border-blue-500/30 hover:bg-blue-600 hover:text-white px-3 py-1.5 rounded text-[10px] font-bold transition flex items-center gap-1">
+                            <i class="fa-solid fa-file-csv"></i> Import
+                        </button>
                         <button onclick="resetProductForm()" id="btn-cancel" class="hidden text-[10px] bg-red-500/20 text-red-400 px-3 py-1.5 rounded border border-red-500/30">Batal</button>
                     </div>
                 </div>
+
                 <form id="productForm" class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div class="space-y-3">
                          <div class="flex items-center gap-3 bg-black/30 p-2 rounded-lg border border-white/5">
@@ -101,6 +124,7 @@
                                 <input type="file" id="inp-file" accept="image/*" class="w-full text-xs text-gray-300">
                             </div>
                         </div>
+                        
                         <div class="flex gap-2">
                             <div class="w-1/3">
                                 <label class="text-[10px] text-gray-500">No. Urut</label>
@@ -116,11 +140,13 @@
                             <input type="text" id="inp-name" required placeholder="Contoh: Papir Jawi" class="w-full bg-black/50 border border-white/10 rounded p-2 text-sm text-white focus:border-emerald-500 outline-none">
                         </div>
                     </div>
+                    
                     <div class="space-y-3">
                         <div>
                             <label class="text-[10px] text-emerald-400 font-bold">Link TikTok Shop (Default)</label>
                             <input type="url" id="inp-link" placeholder="https://..." class="w-full bg-black/50 border border-white/10 rounded p-2 text-sm text-white focus:border-emerald-500 outline-none">
                         </div>
+
                         <div>
                             <label class="text-[10px] text-gray-500">Harga (Rp)</label>
                             <input type="number" id="inp-price" required placeholder="10000" class="w-full bg-black/50 border border-white/10 rounded p-2 text-sm text-white focus:border-emerald-500 outline-none">
@@ -129,6 +155,7 @@
                             <label class="text-[10px] text-gray-500">Deskripsi</label>
                             <textarea id="inp-desc" rows="2" placeholder="Keterangan singkat..." class="w-full bg-black/50 border border-white/10 rounded p-2 text-sm text-white focus:border-emerald-500 outline-none"></textarea>
                         </div>
+                        
                         <div class="bg-black/30 p-2 rounded border border-white/5">
                             <div class="flex justify-between items-center mb-1">
                                 <span class="text-[10px] text-gray-400">Varian Rasa/Warna</span>
@@ -140,6 +167,7 @@
                     <button type="submit" id="btn-submit-prod" class="col-span-1 md:col-span-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-lg transition shadow-lg mt-2">SIMPAN PRODUK</button>
                 </form>
             </div>
+
             <div id="admin-product-list" class="space-y-2 pb-10"></div>
         </div>
 
@@ -153,6 +181,7 @@
                     <button type="submit" class="bg-emerald-600 hover:bg-emerald-500 text-white py-3 rounded-lg font-bold text-sm shadow-lg">TAMBAH AFFILIATOR</button>
                 </form>
             </div>
+
             <div class="glass p-5 rounded-xl bg-gray-900/90 overflow-x-auto">
                 <table class="w-full text-left text-sm text-gray-400">
                     <thead class="uppercase text-[10px] text-gray-500 border-b border-gray-700">
@@ -168,7 +197,9 @@
         <div class="bg-gray-900 w-full max-w-xs p-6 rounded-2xl border border-white/10 shadow-2xl relative">
             <button onclick="toggleLoginModal()" class="absolute top-4 right-4 text-gray-500 hover:text-white"><i class="fa-solid fa-times"></i></button>
             <div class="text-center mb-6">
-                <div class="w-12 h-12 bg-emerald-600 rounded-xl mx-auto flex items-center justify-center mb-3 shadow-lg shadow-emerald-500/20"><i class="fa-solid fa-user-shield text-2xl text-white"></i></div>
+                <div class="w-12 h-12 bg-emerald-600 rounded-xl mx-auto flex items-center justify-center mb-3 shadow-lg shadow-emerald-500/20">
+                    <i class="fa-solid fa-user-shield text-2xl text-white"></i>
+                </div>
                 <h3 class="font-bold text-xl text-white">Login System</h3>
                 <p class="text-xs text-gray-400">Admin & Affiliator Area</p>
             </div>
@@ -227,61 +258,25 @@
     </div>
 
     <script>
+        // CONFIG SUPABASE
         const SUPABASE_URL = 'https://qqyggahvwtysefbmpoqr.supabase.co'; 
         const SUPABASE_KEY = 'sb_publishable_vQfgDnxOeq0F6hykqwUI_g_FxWZYRCP'; 
         const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
+        // STATE
         let currentUser = null; 
         let allProducts = [];
         let isEditingId = null; 
         let existingImageUrl = "";
         let activeProductForLink = null; 
 
+        // INIT
         window.addEventListener('load', async () => {
             checkLoginSession(); 
             await loadData();    
         });
 
-        // FUNGSI UTAMA UNTUK INPUT GESER (SCRUBBING)
-        function initDragInput(element, productId) {
-            let startY, startVal;
-            
-            const onMouseDown = (e) => {
-                e.preventDefault(); // Mencegah seleksi teks
-                startY = e.clientY;
-                startVal = parseInt(element.value) || 0;
-                
-                element.classList.add('scrub-active');
-                document.body.style.cursor = 'ns-resize';
-                
-                document.addEventListener('mousemove', onMouseMove);
-                document.addEventListener('mouseup', onMouseUp);
-            };
-
-            const onMouseMove = (e) => {
-                const diff = startY - e.clientY; // Geser atas = positif
-                // Sensitivitas: 1 pixel = 1 angka (bisa dibagi jika terlalu cepat)
-                let newVal = startVal + Math.floor(diff / 5); 
-                if (newVal < 1) newVal = 1; // Minimal urutan 1
-                element.value = newVal;
-            };
-
-            const onMouseUp = async (e) => {
-                element.classList.remove('scrub-active');
-                document.body.style.cursor = 'default';
-                document.removeEventListener('mousemove', onMouseMove);
-                document.removeEventListener('mouseup', onMouseUp);
-                
-                // Simpan ke database saat dilepas
-                if (parseInt(element.value) !== startVal) {
-                    await quickSort(productId, parseInt(element.value));
-                }
-            };
-
-            element.addEventListener('mousedown', onMouseDown);
-        }
-
-        // ... Sisa fungsi standar (Router, Login, dll) sama ...
+        // ROUTER UI
         function updateUI() {
             const catalogView = document.getElementById('view-catalog');
             const adminView = document.getElementById('view-admin');
@@ -393,6 +388,7 @@
             if(currentUser) updateUI();
         }
 
+        // ADMIN LOGIC
         function switchAdminTab(tab) {
             if(tab === 'products') {
                 document.getElementById('panel-products').classList.remove('hidden');
@@ -412,19 +408,15 @@
             const container = document.getElementById('admin-product-list');
             let { data: products } = await sb.from('products').select('*').order('sort_order', { ascending: true });
             container.innerHTML = '';
-            
             products.forEach(prod => {
                 const item = document.createElement('div');
                 item.className = "flex items-center gap-3 bg-black/40 p-2 rounded-lg border border-white/5";
                 item.innerHTML = `
-                    <div class="flex flex-col items-center cursor-ns-resize group" title="Klik & Tarik untuk ubah">
+                    <div class="flex flex-col items-center">
                         <label class="text-[8px] text-gray-500 mb-0.5">Urut</label>
-                        <input type="number" 
-                            id="sort-${prod.id}"
-                            value="${prod.sort_order || 999}" 
-                            class="scrub-input w-12 bg-gray-800 border border-gray-600 text-center text-white text-xs rounded p-1 focus:border-emerald-500 outline-none transition-colors">
+                        <input type="number" value="${prod.sort_order || 999}" onchange="quickSort(${prod.id}, this.value)" class="w-14 bg-gray-800 border border-gray-600 text-center text-white text-xs rounded p-1">
                     </div>
-                    <img src="${prod.image_url || 'https://via.placeholder.com/50'}" class="w-10 h-10 rounded-md object-cover border border-white/10 pointer-events-none">
+                    <img src="${prod.image_url || 'https://via.placeholder.com/50'}" class="w-10 h-10 rounded-md object-cover border border-white/10">
                     <div class="flex-1 min-w-0">
                         <div class="text-xs font-bold text-white truncate">${prod.name}</div>
                         <div class="text-[10px] text-gray-400 font-mono">${prod.product_code} | Rp ${prod.price.toLocaleString()}</div>
@@ -435,10 +427,6 @@
                     </div>
                 `;
                 container.appendChild(item);
-                
-                // AKTIFKAN FITUR DRAG PADA INPUT INI
-                const inputEl = item.querySelector(`#sort-${prod.id}`);
-                initDragInput(inputEl, prod.id);
             });
         }
 
@@ -477,6 +465,7 @@
             if(confirm('Hapus affiliator ini?')) { await sb.from('affiliators').delete().eq('id', id); fetchAffiliates(); }
         }
 
+        // SAVE PRODUCT
         document.getElementById('productForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const btn = document.getElementById('btn-submit-prod');
@@ -489,7 +478,7 @@
                 name: document.getElementById('inp-name').value,
                 price: document.getElementById('inp-price').value,
                 description: document.getElementById('inp-desc').value,
-                default_link: document.getElementById('inp-link').value,
+                default_link: document.getElementById('inp-link').value, // <--- KOLOM LINK DITAMBAHKAN
             };
 
             const fileInput = document.getElementById('inp-file');
@@ -531,7 +520,7 @@
             document.getElementById('inp-name').value = prod.name;
             document.getElementById('inp-price').value = prod.price;
             document.getElementById('inp-desc').value = prod.description;
-            document.getElementById('inp-link').value = prod.default_link || '';
+            document.getElementById('inp-link').value = prod.default_link || ''; // <--- EDIT LINK
             
             if(prod.image_url) {
                 document.getElementById('preview-img').src = prod.image_url;
@@ -563,10 +552,7 @@
             if(confirm('Hapus produk?')) { await sb.from('products').delete().eq('id', id); loadAdminData(); }
         }
         
-        async function quickSort(id, val) { 
-            await sb.from('products').update({sort_order: val}).eq('id', id);
-            showToast('Urutan Disimpan');
-        }
+        async function quickSort(id, val) { await sb.from('products').update({sort_order: val}).eq('id', id); }
 
         function addVariantInput(value = '') {
             const container = document.getElementById('variant-container');
@@ -579,6 +565,7 @@
             container.appendChild(div);
         }
 
+        // Preview Image
         document.getElementById('inp-file').addEventListener('change', function(e) {
             const file = e.target.files[0];
             if (file) {
@@ -592,6 +579,7 @@
             }
         });
 
+        // OTHER FUNCTIONS
         function openEditLinkModal(id, name) {
             activeProductForLink = id;
             document.getElementById('edit-product-name').innerText = name;
