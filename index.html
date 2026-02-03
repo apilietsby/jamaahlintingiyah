@@ -23,7 +23,10 @@
     </div>
 
     <div id="product-list" class="max-w-md mx-auto p-4 space-y-4">
-        <p class="text-center text-gray-500 mt-10">Memuat produk...</p>
+        <div class="text-center mt-10 space-y-2">
+            <i class="fa-solid fa-spinner fa-spin text-2xl text-gray-400"></i>
+            <p class="text-gray-500">Memuat produk...</p>
+        </div>
     </div>
 
     <div id="login-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50">
@@ -51,25 +54,32 @@
     </div>
 
     <script>
-        // --- KONFIGURASI SUPABASE ---
-        const SUPABASE_URL = 'https://qqyggahvwtysefbmpoqr.supabase.co'; // GANTI INI
-        const SUPABASE_KEY = 'sb_publishable_vQfgDnxOeq0F6hykqwUI_g_FxWZYRCP'; // GANTI INI (ANON KEY)
-        const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+        // --- PERBAIKAN DI SINI ---
+        
+        const SUPABASE_URL = 'https://qqyggahvwtysefbmpoqr.supabase.co'; 
+        
+        // PENTING: Pastikan ini 'anon' public key (biasanya diawali "ey..."). 
+        // Key yang Anda paste sebelumnya terlihat seperti format lain, tapi jika itu benar anon key, silakan pakai.
+        const SUPABASE_KEY = 'sb_publishable_vQfgDnxOeq0F6hykqwUI_g_FxWZYRCP'; 
+
+        // Kita gunakan nama variabel 'sb' (bukan 'supabase') agar tidak bentrok dengan library
+        // Dan kita panggil via 'supabase.createClient'
+        const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
         // --- STATE ---
-        let currentAffiliator = null; // Siapa yang sedang login (untuk edit)
-        let shopOwner = null;         // Toko siapa yang sedang dilihat (dari URL)
+        let currentAffiliator = null; 
+        let shopOwner = null;         
         let activeProductForEdit = null; 
 
         // --- INIT ---
         window.addEventListener('load', async () => {
-            checkUrlHash();     // Cek URL lagi buka toko siapa
-            await loadProducts(); // Muat produk
+            checkUrlHash();     
+            await loadProducts(); 
         });
 
-        // 1. Cek URL Hash (Format: domain.com/#/budi)
+        // 1. Cek URL Hash
         function checkUrlHash() {
-            const hash = window.location.hash; // ambil '#/budi'
+            const hash = window.location.hash; 
             if (hash && hash.startsWith('#/')) {
                 shopOwner = hash.replace('#/', '');
                 document.getElementById('shop-info').classList.remove('hidden');
@@ -77,32 +87,39 @@
             }
         }
 
-        // 2. Ambil Data Produk & Link
+        // 2. Ambil Data Produk
         async function loadProducts() {
             const container = document.getElementById('product-list');
             
-            // Ambil semua produk
-            let { data: products, error } = await supabase
+            // Ganti 'supabase' menjadi 'sb' di semua query
+            let { data: products, error } = await sb
                 .from('products')
                 .select('*')
                 .order('id', { ascending: true });
 
-            if (error) return alert('Gagal memuat produk');
+            if (error) {
+                console.error(error); // Tampilkan error di console biar mudah debug
+                return alert('Gagal memuat produk. Cek Console browser.');
+            }
 
-            // Jika sedang melihat toko orang, ambil link khusus mereka
+            // Ambil link khusus jika ada owner
             let customLinks = [];
             if (shopOwner) {
-                const { data: links } = await supabase
+                const { data: links } = await sb
                     .from('affiliate_links')
                     .select('product_id, custom_link')
                     .eq('affiliator_username', shopOwner);
                 customLinks = links || [];
             }
 
-            container.innerHTML = ''; // Kosongkan container
+            container.innerHTML = ''; 
+
+            if (products.length === 0) {
+                container.innerHTML = '<p class="text-center text-gray-500">Belum ada produk.</p>';
+                return;
+            }
 
             products.forEach(prod => {
-                // Tentukan link mana yang dipakai (Khusus atau Default)
                 const linkData = customLinks.find(l => l.product_id === prod.id);
                 const finalLink = linkData ? linkData.custom_link : prod.default_link;
 
@@ -110,13 +127,22 @@
                 const card = document.createElement('div');
                 card.className = "bg-white rounded-lg shadow overflow-hidden relative";
                 
-                // Logic Varian (Jika ada varian, tampilkan dropdown)
+                // Logic Varian (Parse JSON safely)
                 let variantHtml = '';
-                if(prod.variants && prod.variants.length > 0) {
+                let variants = [];
+                
+                // Cek apakah variants berupa string JSON atau sudah object
+                if (typeof prod.variants === 'string') {
+                    try { variants = JSON.parse(prod.variants); } catch(e) {}
+                } else {
+                    variants = prod.variants || [];
+                }
+
+                if(variants.length > 0) {
                     variantHtml = `
                         <select class="w-full mb-2 p-1 border rounded text-sm bg-gray-50">
                             <option>Pilih Varian</option>
-                            ${prod.variants.map(v => `<option>${v.name}</option>`).join('')}
+                            ${variants.map(v => `<option>${v.name}</option>`).join('')}
                         </select>
                     `;
                 }
@@ -135,7 +161,7 @@
                            Beli Sekarang
                         </a>
 
-                        <button onclick="openEditModal(${prod.id}, '${prod.name}')" 
+                        <button onclick="openEditModal(${prod.id}, '${prod.name.replace(/'/g, "\\'")}')" 
                             class="edit-btn hidden absolute top-2 right-2 bg-white text-black p-2 rounded-full shadow hover:bg-yellow-100">
                             <i class="fa-solid fa-pen"></i>
                         </button>
@@ -144,7 +170,7 @@
                 container.appendChild(card);
             });
 
-            checkLoginState(); // Cek apakah tombol edit perlu dimunculkan
+            checkLoginState(); 
         }
 
         // 3. Login System
@@ -156,8 +182,8 @@
             const username = document.getElementById('input-username').value.toLowerCase();
             const pin = document.getElementById('input-pin').value;
 
-            // Validasi ke Supabase
-            const { data, error } = await supabase
+            // Ganti 'supabase' jadi 'sb'
+            const { data, error } = await sb
                 .from('affiliators')
                 .select('*')
                 .eq('username', username)
@@ -171,7 +197,6 @@
                 toggleLoginModal();
                 checkLoginState();
                 
-                // Ubah URL ke mode toko dia sendiri
                 window.location.hash = `/${currentAffiliator}`;
                 location.reload(); 
             } else {
@@ -183,7 +208,6 @@
             const savedUser = localStorage.getItem('affiliator_user');
             if (savedUser) {
                 currentAffiliator = savedUser;
-                // Munculkan semua tombol edit
                 document.querySelectorAll('.edit-btn').forEach(el => el.classList.remove('hidden'));
             }
         }
@@ -193,9 +217,6 @@
             activeProductForEdit = prodId;
             document.getElementById('edit-product-name').innerText = `Produk: ${prodName}`;
             document.getElementById('edit-modal').classList.remove('hidden');
-            
-            // Coba ambil link yang sudah ada sebelumnya (kalau ada)
-            // (Opsional: bisa ditambahkan fetch ke affiliate_links untuk pre-fill input)
         }
 
         function closeEditModal() {
@@ -206,8 +227,8 @@
             const newLink = document.getElementById('input-custom-link').value;
             if(!newLink) return alert('Link tidak boleh kosong');
 
-            // Upsert: Insert kalau belum ada, Update kalau sudah ada
-            const { error } = await supabase
+            // Ganti 'supabase' jadi 'sb'
+            const { error } = await sb
                 .from('affiliate_links')
                 .upsert({ 
                     affiliator_username: currentAffiliator,
@@ -220,7 +241,7 @@
             } else {
                 alert('Link berhasil disimpan!');
                 closeEditModal();
-                location.reload(); // Refresh biar link tombol berubah
+                location.reload(); 
             }
         }
     </script>
