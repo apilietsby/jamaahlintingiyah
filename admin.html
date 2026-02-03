@@ -3,82 +3,252 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin - Input Produk</title>
+    <title>Admin Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        /* Agar scroll smooth saat klik edit */
+        html { scroll-behavior: smooth; }
+    </style>
 </head>
-<body class="bg-gray-800 min-h-screen p-6 text-gray-100">
+<body class="bg-gray-800 min-h-screen p-4 md:p-8 text-gray-100">
 
-    <div class="max-w-2xl mx-auto bg-gray-900 p-8 rounded-lg shadow-xl border border-gray-700">
-        <h1 class="text-2xl font-bold mb-6 text-white border-b border-gray-700 pb-2">
-            <i class="fa-solid fa-box-open mr-2"></i> Input Produk Baru
-        </h1>
+    <div class="max-w-4xl mx-auto space-y-8">
+        
+        <div id="form-section" class="bg-gray-900 p-6 md:p-8 rounded-lg shadow-xl border border-gray-700">
+            <div class="flex justify-between items-center mb-6 border-b border-gray-700 pb-2">
+                <h1 class="text-2xl font-bold text-white">
+                    <i class="fa-solid fa-layer-group mr-2"></i> <span id="form-title">Input Produk Baru</span>
+                </h1>
+                <button onclick="resetForm()" id="btn-cancel" class="hidden text-sm text-red-400 hover:text-red-300">
+                    <i class="fa-solid fa-times"></i> Batal Edit
+                </button>
+            </div>
 
-        <form id="productForm" class="space-y-6">
-            
-            <div>
-                <label class="block text-sm font-medium mb-2 text-gray-400">Foto Produk (Wajib 1:1 / Kotak)</label>
-                <div class="flex items-center gap-4">
-                    <div class="w-24 h-24 bg-gray-700 rounded flex items-center justify-center overflow-hidden border border-gray-600">
-                        <img id="preview-img" src="" class="w-full h-full object-cover hidden">
-                        <i id="preview-icon" class="fa-solid fa-image text-2xl text-gray-500"></i>
+            <form id="productForm" class="space-y-6">
+                
+                <div>
+                    <label class="block text-sm font-medium mb-2 text-gray-400">Foto Produk (Wajib 1:1)</label>
+                    <div class="flex items-center gap-4">
+                        <div class="w-24 h-24 bg-gray-700 rounded flex items-center justify-center overflow-hidden border border-gray-600 relative group">
+                            <img id="preview-img" src="" class="w-full h-full object-cover hidden">
+                            <i id="preview-icon" class="fa-solid fa-image text-2xl text-gray-500"></i>
+                        </div>
+                        <div class="flex-1">
+                            <input type="file" id="inp-file" accept="image/*" class="w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-700 cursor-pointer">
+                            <p class="text-xs text-gray-500 mt-1">*Biarkan kosong jika edit produk tanpa mengubah gambar.</p>
+                        </div>
                     </div>
-                    <input type="file" id="inp-file" accept="image/*" class="text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-700 cursor-pointer">
                 </div>
-            </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div class="col-span-1 md:col-span-2">
-                    <label class="block text-sm font-medium mb-1 text-yellow-400 font-bold">KODE PRODUK (Wajib)</label>
-                    <input type="text" id="inp-code" required placeholder="Contoh: A001" class="w-full bg-gray-800 border border-gray-600 rounded p-2 text-white focus:outline-none focus:border-blue-500">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium mb-1 text-yellow-400 font-bold">KODE (Wajib)</label>
+                        <input type="text" id="inp-code" required placeholder="A001" class="w-full bg-gray-800 border border-gray-600 rounded p-2 text-white focus:border-blue-500">
+                    </div>
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-medium mb-1 text-gray-400">Nama Produk</label>
+                        <input type="text" id="inp-name" required class="w-full bg-gray-800 border border-gray-600 rounded p-2 text-white focus:border-blue-500">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium mb-1 text-gray-400">Harga (Rp)</label>
+                        <input type="number" id="inp-price" required class="w-full bg-gray-800 border border-gray-600 rounded p-2 text-white focus:border-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-1 text-gray-400">Link Default</label>
+                        <input type="url" id="inp-link" required placeholder="https://..." class="w-full bg-gray-800 border border-gray-600 rounded p-2 text-white focus:border-blue-500">
+                    </div>
                 </div>
 
                 <div>
-                    <label class="block text-sm font-medium mb-1 text-gray-400">Nama Produk</label>
-                    <input type="text" id="inp-name" required class="w-full bg-gray-800 border border-gray-600 rounded p-2 text-white focus:outline-none focus:border-blue-500">
+                    <label class="block text-sm font-medium mb-1 text-gray-400">Deskripsi Singkat</label>
+                    <textarea id="inp-desc" rows="2" class="w-full bg-gray-800 border border-gray-600 rounded p-2 text-white focus:border-blue-500"></textarea>
                 </div>
-                <div>
-                    <label class="block text-sm font-medium mb-1 text-gray-400">Harga (Rp)</label>
-                    <input type="number" id="inp-price" required class="w-full bg-gray-800 border border-gray-600 rounded p-2 text-white focus:outline-none focus:border-blue-500">
+
+                <div class="bg-gray-800 p-4 rounded border border-gray-700">
+                    <div class="flex justify-between items-center mb-2">
+                        <label class="text-sm font-medium text-gray-400">Varian (Opsional)</label>
+                        <button type="button" onclick="addVariantInput()" class="text-xs bg-gray-700 hover:bg-gray-600 px-2 py-1 rounded text-white">
+                            <i class="fa-solid fa-plus"></i> Tambah
+                        </button>
+                    </div>
+                    <div id="variant-container" class="space-y-2"></div>
                 </div>
+
+                <button type="submit" id="btn-submit" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded transition flex justify-center items-center gap-2">
+                    <span id="btn-text">Simpan Produk</span>
+                    <i id="btn-loading" class="fa-solid fa-spinner fa-spin hidden"></i>
+                </button>
+            </form>
+        </div>
+
+        <div class="bg-gray-900 p-6 md:p-8 rounded-lg shadow-xl border border-gray-700">
+            <h2 class="text-xl font-bold text-white mb-4 border-b border-gray-700 pb-2">
+                <i class="fa-solid fa-list mr-2"></i> Daftar Produk
+            </h2>
+            
+            <div id="admin-product-list" class="space-y-3">
+                <p class="text-center text-gray-500 py-4">Memuat data...</p>
             </div>
+        </div>
 
-            <div>
-                <label class="block text-sm font-medium mb-1 text-gray-400">Link Default (TikTok Shop Admin)</label>
-                <input type="url" id="inp-link" required placeholder="https://..." class="w-full bg-gray-800 border border-gray-600 rounded p-2 text-white focus:outline-none focus:border-blue-500">
-            </div>
-
-            <div>
-                <label class="block text-sm font-medium mb-1 text-gray-400">Deskripsi Singkat</label>
-                <textarea id="inp-desc" rows="3" class="w-full bg-gray-800 border border-gray-600 rounded p-2 text-white focus:outline-none focus:border-blue-500"></textarea>
-            </div>
-
-            <div class="bg-gray-800 p-4 rounded border border-gray-700">
-                <div class="flex justify-between items-center mb-2">
-                    <label class="text-sm font-medium text-gray-400">Varian (Opsional)</label>
-                    <button type="button" onclick="addVariantInput()" class="text-xs bg-gray-700 hover:bg-gray-600 px-2 py-1 rounded text-white">
-                        <i class="fa-solid fa-plus"></i> Tambah
-                    </button>
-                </div>
-                <div id="variant-container" class="space-y-2"></div>
-                <p class="text-xs text-gray-500 mt-2">*Kosongkan jika produk tidak memiliki varian.</p>
-            </div>
-
-            <button type="submit" id="btn-submit" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded transition flex justify-center items-center gap-2">
-                <span id="btn-text">Simpan Produk</span>
-                <i id="btn-loading" class="fa-solid fa-spinner fa-spin hidden"></i>
-            </button>
-
-        </form>
     </div>
 
     <script>
+        // --- KONFIGURASI SUPABASE ---
         const SUPABASE_URL = 'https://qqyggahvwtysefbmpoqr.supabase.co'; 
         const SUPABASE_KEY = 'sb_publishable_vQfgDnxOeq0F6hykqwUI_g_FxWZYRCP'; 
         const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        // Preview Gambar
+        // --- STATE ---
+        let isEditingId = null; // Menyimpan ID produk yg sedang diedit
+        let existingImageUrl = ""; // Menyimpan URL gambar lama saat edit
+
+        // --- LOAD DATA SAAT MULAI ---
+        window.addEventListener('load', fetchProducts);
+
+        // --- FUNGSI UTAMA 1: AMBIL DATA ---
+        async function fetchProducts() {
+            const container = document.getElementById('admin-product-list');
+            
+            let { data: products, error } = await sb
+                .from('products')
+                .select('*')
+                .order('id', { ascending: false }); // Produk terbaru di atas
+
+            if (error) {
+                container.innerHTML = '<p class="text-red-400 text-center">Gagal memuat data.</p>';
+                return;
+            }
+
+            if (products.length === 0) {
+                container.innerHTML = '<p class="text-gray-500 text-center">Belum ada produk.</p>';
+                return;
+            }
+
+            container.innerHTML = '';
+            products.forEach(prod => {
+                // Tampilan List Horizontal
+                const item = document.createElement('div');
+                item.className = "flex items-center gap-4 bg-gray-800 p-3 rounded border border-gray-700 hover:border-gray-500 transition";
+                
+                item.innerHTML = `
+                    <img src="${prod.image_url || 'https://via.placeholder.com/100'}" class="w-16 h-16 rounded object-cover bg-gray-700">
+                    
+                    <div class="flex-1 min-w-0">
+                        <div class="flex items-center gap-2">
+                            <span class="text-xs font-bold bg-yellow-600 text-black px-1 rounded">${prod.product_code || '-'}</span>
+                            <h3 class="font-bold text-white truncate">${prod.name}</h3>
+                        </div>
+                        <p class="text-sm text-green-400">Rp ${prod.price.toLocaleString()}</p>
+                    </div>
+
+                    <div class="flex gap-2">
+                        <button onclick='prepareEdit(${JSON.stringify(prod)})' class="bg-blue-600 hover:bg-blue-700 text-white p-2 rounded text-sm" title="Edit">
+                            <i class="fa-solid fa-pen"></i>
+                        </button>
+                        <button onclick="deleteProduct(${prod.id}, '${prod.name}')" class="bg-red-600 hover:bg-red-700 text-white p-2 rounded text-sm" title="Hapus">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
+                    </div>
+                `;
+                container.appendChild(item);
+            });
+        }
+
+        // --- FUNGSI UTAMA 2: HAPUS DATA ---
+        async function deleteProduct(id, name) {
+            if(!confirm(`Yakin ingin menghapus produk "${name}"?`)) return;
+
+            // Hapus dari database (Gambar di storage biarkan saja atau hapus manual agar aman)
+            const { error } = await sb.from('products').delete().eq('id', id);
+
+            if (error) {
+                alert('Gagal menghapus: ' + error.message);
+            } else {
+                fetchProducts(); // Refresh list tanpa reload halaman
+                // Jika sedang mengedit produk yang dihapus, reset form
+                if(isEditingId === id) resetForm();
+            }
+        }
+
+        // --- FUNGSI UTAMA 3: PERSIAPAN EDIT ---
+        function prepareEdit(prod) {
+            // 1. Set State
+            isEditingId = prod.id;
+            existingImageUrl = prod.image_url;
+
+            // 2. Ubah Tampilan Form
+            document.getElementById('form-title').innerText = `Edit Produk: ${prod.product_code}`;
+            document.getElementById('btn-text').innerText = "Update Produk";
+            document.getElementById('btn-submit').classList.remove('bg-green-600', 'hover:bg-green-700');
+            document.getElementById('btn-submit').classList.add('bg-blue-600', 'hover:bg-blue-700');
+            document.getElementById('btn-cancel').classList.remove('hidden');
+
+            // 3. Isi Input
+            document.getElementById('inp-code').value = prod.product_code || '';
+            document.getElementById('inp-name').value = prod.name;
+            document.getElementById('inp-price').value = prod.price;
+            document.getElementById('inp-link').value = prod.default_link;
+            document.getElementById('inp-desc').value = prod.description || '';
+            
+            // Preview Gambar Lama
+            const previewImg = document.getElementById('preview-img');
+            const previewIcon = document.getElementById('preview-icon');
+            if(prod.image_url) {
+                previewImg.src = prod.image_url;
+                previewImg.classList.remove('hidden');
+                previewIcon.classList.add('hidden');
+            }
+
+            // Isi Varian
+            const container = document.getElementById('variant-container');
+            container.innerHTML = '';
+            let variants = [];
+            try { variants = typeof prod.variants === 'string' ? JSON.parse(prod.variants) : prod.variants; } catch(e){}
+            
+            if(variants && variants.length > 0) {
+                variants.forEach(v => addVariantInput(v.name));
+            }
+
+            // Scroll ke atas
+            document.getElementById('form-section').scrollIntoView();
+        }
+
+        function resetForm() {
+            isEditingId = null;
+            existingImageUrl = "";
+            document.getElementById('productForm').reset();
+            document.getElementById('variant-container').innerHTML = '';
+            document.getElementById('preview-img').src = "";
+            document.getElementById('preview-img').classList.add('hidden');
+            document.getElementById('preview-icon').classList.remove('hidden');
+
+            // Kembalikan Tampilan Tombol
+            document.getElementById('form-title').innerText = "Input Produk Baru";
+            document.getElementById('btn-text').innerText = "Simpan Produk";
+            document.getElementById('btn-submit').classList.add('bg-green-600', 'hover:bg-green-700');
+            document.getElementById('btn-submit').classList.remove('bg-blue-600', 'hover:bg-blue-700');
+            document.getElementById('btn-cancel').classList.add('hidden');
+        }
+
+        // --- FUNGSI PENDUKUNG ---
+        function addVariantInput(value = '') {
+            const container = document.getElementById('variant-container');
+            const div = document.createElement('div');
+            div.className = 'flex gap-2';
+            div.innerHTML = `
+                <input type="text" value="${value}" placeholder="Contoh: Merah XL" class="variant-input w-full bg-gray-900 border border-gray-600 rounded p-2 text-sm text-white">
+                <button type="button" onclick="this.parentElement.remove()" class="text-red-400 hover:text-red-300 px-2"><i class="fa-solid fa-trash"></i></button>
+            `;
+            container.appendChild(div);
+        }
+
+        // Preview Gambar saat pilih file
         document.getElementById('inp-file').addEventListener('change', function(e) {
             const file = e.target.files[0];
             if (file) {
@@ -92,23 +262,13 @@
             }
         });
 
-        function addVariantInput() {
-            const container = document.getElementById('variant-container');
-            const div = document.createElement('div');
-            div.className = 'flex gap-2';
-            div.innerHTML = `
-                <input type="text" placeholder="Contoh: Merah XL" class="variant-input w-full bg-gray-900 border border-gray-600 rounded p-2 text-sm text-white">
-                <button type="button" onclick="this.parentElement.remove()" class="text-red-400 hover:text-red-300 px-2"><i class="fa-solid fa-trash"></i></button>
-            `;
-            container.appendChild(div);
-        }
-
+        // --- FUNGSI UTAMA 4: SIMPAN / UPDATE ---
         document.getElementById('productForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             setLoading(true);
 
-            // Ambil data termasuk KODE
-            const code = document.getElementById('inp-code').value; // <--- Data Baru
+            // Ambil Data
+            const code = document.getElementById('inp-code').value;
             const name = document.getElementById('inp-name').value;
             const price = document.getElementById('inp-price').value;
             const desc = document.getElementById('inp-desc').value;
@@ -122,7 +282,9 @@
             });
 
             try {
-                let imageUrl = "";
+                let imageUrl = existingImageUrl; // Default pakai yang lama
+
+                // Cek apakah user upload gambar baru
                 if (fileInput.files.length > 0) {
                     const file = fileInput.files[0];
                     const fileExt = file.name.split('.').pop();
@@ -135,23 +297,38 @@
                     imageUrl = data.publicUrl;
                 }
 
-                // Insert ke database dengan kolom product_code
-                const { error: insertError } = await sb
-                    .from('products')
-                    .insert({
-                        product_code: code, // <--- Kolom Baru
-                        name: name,
-                        price: price,
-                        description: desc,
-                        default_link: defaultLink,
-                        image_url: imageUrl,
-                        variants: JSON.stringify(variants)
-                    });
+                const payload = {
+                    product_code: code,
+                    name: name,
+                    price: price,
+                    description: desc,
+                    default_link: defaultLink,
+                    image_url: imageUrl,
+                    variants: JSON.stringify(variants)
+                };
 
-                if (insertError) throw insertError;
+                let error = null;
 
-                alert('Berhasil! Produk tersimpan.');
-                location.reload(); 
+                if (isEditingId) {
+                    // MODE UPDATE
+                    const { error: updateError } = await sb
+                        .from('products')
+                        .update(payload)
+                        .eq('id', isEditingId);
+                    error = updateError;
+                } else {
+                    // MODE INSERT BARU
+                    const { error: insertError } = await sb
+                        .from('products')
+                        .insert(payload);
+                    error = insertError;
+                }
+
+                if (error) throw error;
+
+                alert(isEditingId ? 'Produk berhasil diupdate!' : 'Produk berhasil disimpan!');
+                resetForm();
+                fetchProducts(); // Refresh list
 
             } catch (err) {
                 console.error(err);
@@ -167,12 +344,12 @@
             const btn = document.getElementById('btn-submit');
             
             if (isLoading) {
-                btnText.innerText = 'Menyimpan...';
+                btnText.innerText = 'Memproses...';
                 btnIcon.classList.remove('hidden');
                 btn.disabled = true;
                 btn.classList.add('opacity-50', 'cursor-not-allowed');
             } else {
-                btnText.innerText = 'Simpan Produk';
+                btnText.innerText = isEditingId ? 'Update Produk' : 'Simpan Produk';
                 btnIcon.classList.add('hidden');
                 btn.disabled = false;
                 btn.classList.remove('opacity-50', 'cursor-not-allowed');
