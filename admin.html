@@ -3,106 +3,175 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard</title>
+    <title>Admin System</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <style>html { scroll-behavior: smooth; }</style>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+        .active-tab { background-color: #059669; color: white; border-color: #059669; }
+        .inactive-tab { background-color: #1f2937; color: #9ca3af; border-color: #374151; }
+    </style>
 </head>
-<body class="bg-gray-800 min-h-screen p-4 md:p-8 text-gray-100">
+<body class="bg-gray-900 min-h-screen text-gray-100">
 
-    <div class="max-w-4xl mx-auto space-y-8">
+    <div id="admin-login-modal" class="fixed inset-0 bg-black/95 z-50 flex items-center justify-center p-4">
+        <div class="bg-gray-800 p-8 rounded-2xl shadow-2xl w-full max-w-sm border border-gray-700">
+            <div class="text-center mb-6">
+                <div class="w-16 h-16 bg-emerald-600 rounded-xl mx-auto flex items-center justify-center mb-4 shadow-lg shadow-emerald-900">
+                    <i class="fa-solid fa-user-shield text-3xl text-white"></i>
+                </div>
+                <h2 class="text-2xl font-bold text-white">Admin Login</h2>
+                <p class="text-sm text-gray-400">Masuk untuk mengelola toko & tim.</p>
+            </div>
+            <form id="login-form" class="space-y-4">
+                <input type="text" id="login-username" placeholder="Username Admin" class="w-full bg-gray-900 border border-gray-600 p-3 rounded-lg focus:border-emerald-500 outline-none transition">
+                <input type="password" id="login-pin" placeholder="PIN Security" class="w-full bg-gray-900 border border-gray-600 p-3 rounded-lg focus:border-emerald-500 outline-none transition">
+                <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-lg transition shadow-lg">MASUK SYSTEM</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="dashboard-content" class="hidden max-w-6xl mx-auto p-4 md:p-8 space-y-6">
         
-        <div class="flex justify-between items-center bg-gray-900 p-4 rounded-lg border border-gray-700 shadow-xl">
-            <h1 class="text-xl font-bold text-white"><i class="fa-solid fa-layer-group mr-2"></i> Admin Panel</h1>
-            <input type="file" id="csv-input" accept=".csv" class="hidden">
-            <button onclick="document.getElementById('csv-input').click()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded text-sm font-bold flex items-center gap-2 transition">
-                <i class="fa-solid fa-file-csv"></i> Import CSV
+        <div class="flex flex-col md:flex-row justify-between items-center gap-4 bg-gray-800 p-6 rounded-2xl border border-gray-700 shadow-xl">
+            <div>
+                <h1 class="text-2xl font-bold text-white">Dashboard Admin</h1>
+                <p class="text-sm text-gray-400">Halo, <span id="admin-name" class="text-emerald-400 font-bold">...</span></p>
+            </div>
+            <button onclick="handleLogout()" class="bg-red-500/10 text-red-400 border border-red-500/20 px-4 py-2 rounded-lg hover:bg-red-500 hover:text-white transition text-sm">
+                <i class="fa-solid fa-power-off mr-2"></i> Logout
             </button>
         </div>
 
-        <div id="form-section" class="bg-gray-900 p-6 md:p-8 rounded-lg shadow-xl border border-gray-700">
-            <div class="flex justify-between items-center mb-6 border-b border-gray-700 pb-2">
-                <h2 class="text-xl font-bold text-white"><span id="form-title">Input Produk Manual</span></h2>
-                <button onclick="resetForm()" id="btn-cancel" class="hidden text-sm text-red-400 hover:text-red-300"><i class="fa-solid fa-times"></i> Batal Edit</button>
-            </div>
+        <div class="flex gap-2 border-b border-gray-700">
+            <button onclick="switchTab('products')" id="tab-products" class="active-tab px-6 py-3 rounded-t-lg font-bold border-t border-x transition flex items-center gap-2">
+                <i class="fa-solid fa-box"></i> Kelola Produk
+            </button>
+            <button onclick="switchTab('affiliates')" id="tab-affiliates" class="inactive-tab px-6 py-3 rounded-t-lg font-bold border-t border-x transition flex items-center gap-2">
+                <i class="fa-solid fa-users"></i> Kelola Affiliator
+            </button>
+        </div>
 
-            <form id="productForm" class="space-y-6">
-                <div>
-                    <label class="block text-sm font-medium mb-2 text-gray-400">Foto Produk</label>
+        <div id="view-products" class="space-y-6">
+            <div class="bg-gray-800 p-6 rounded-b-2xl rounded-tr-2xl shadow-xl border border-gray-700 border-t-0">
+                <div class="flex justify-between items-center mb-6 border-b border-gray-700 pb-2">
+                    <h2 class="text-xl font-bold text-white"><span id="form-title">Input Produk</span></h2>
+                    <div class="flex gap-2">
+                         <input type="file" id="csv-input" accept=".csv" class="hidden">
+                         <button onclick="document.getElementById('csv-input').click()" class="bg-emerald-600/20 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-600 hover:text-white px-3 py-1.5 rounded text-xs font-bold transition">
+                             <i class="fa-solid fa-file-csv"></i> Import CSV
+                         </button>
+                        <button onclick="resetProductForm()" id="btn-cancel" class="hidden text-xs text-red-400 hover:text-red-300">Batal Edit</button>
+                    </div>
+                </div>
+
+                <form id="productForm" class="space-y-4">
                     <div class="flex items-center gap-4">
-                        <div class="w-24 h-24 bg-gray-700 rounded flex items-center justify-center overflow-hidden border border-gray-600 relative group">
+                        <div class="w-20 h-20 bg-gray-700 rounded flex items-center justify-center overflow-hidden border border-gray-600">
                             <img id="preview-img" src="" class="w-full h-full object-cover hidden">
                             <i id="preview-icon" class="fa-solid fa-image text-2xl text-gray-500"></i>
                         </div>
                         <div class="flex-1">
-                            <input type="file" id="inp-file" accept="image/*" class="w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-700 cursor-pointer">
-                            <p class="text-xs text-gray-500 mt-1">*Kosongkan jika tidak ingin mengubah gambar saat edit.</p>
+                            <label class="block text-xs text-gray-400 mb-1">Foto Produk</label>
+                            <input type="file" id="inp-file" accept="image/*" class="w-full text-xs text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:bg-gray-700 file:text-white hover:file:bg-gray-600 cursor-pointer">
                         </div>
                     </div>
-                </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                    <div class="md:col-span-1">
-                        <label class="block text-sm font-medium mb-1 text-emerald-400 font-bold">No. Urut</label>
-                        <input type="number" id="inp-sort" placeholder="1" class="w-full bg-gray-800 border border-gray-600 rounded p-2 text-white focus:border-emerald-500" title="Semakin kecil angka, semakin di atas posisinya">
-                        <p class="text-[10px] text-gray-500 mt-1">*1 = Paling Atas</p>
+                    <div class="grid grid-cols-4 gap-4">
+                        <div class="col-span-1">
+                            <label class="block text-xs text-gray-400 mb-1">Urutan</label>
+                            <input type="number" id="inp-sort" placeholder="1" class="w-full bg-gray-900 border border-gray-600 rounded p-2 text-white text-sm">
+                        </div>
+                        <div class="col-span-1">
+                            <label class="block text-xs text-yellow-400 font-bold mb-1">Kode</label>
+                            <input type="text" id="inp-code" required placeholder="A001" class="w-full bg-gray-900 border border-gray-600 rounded p-2 text-white text-sm">
+                        </div>
+                        <div class="col-span-2">
+                            <label class="block text-xs text-gray-400 mb-1">Nama Produk</label>
+                            <input type="text" id="inp-name" required class="w-full bg-gray-900 border border-gray-600 rounded p-2 text-white text-sm">
+                        </div>
                     </div>
-                    <div class="md:col-span-1">
-                        <label class="block text-sm font-medium mb-1 text-yellow-400 font-bold">KODE (Wajib)</label>
-                        <input type="text" id="inp-code" required placeholder="A001" class="w-full bg-gray-800 border border-gray-600 rounded p-2 text-white focus:border-blue-500">
-                    </div>
-                    <div class="md:col-span-2">
-                        <label class="block text-sm font-medium mb-1 text-gray-400">Nama Produk</label>
-                        <input type="text" id="inp-name" required class="w-full bg-gray-800 border border-gray-600 rounded p-2 text-white focus:border-blue-500">
-                    </div>
-                </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs text-gray-400 mb-1">Harga</label>
+                            <input type="number" id="inp-price" required class="w-full bg-gray-900 border border-gray-600 rounded p-2 text-white text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-xs text-gray-400 mb-1">Link Default</label>
+                            <input type="url" id="inp-link" placeholder="Optional" class="w-full bg-gray-900 border border-gray-600 rounded p-2 text-white text-sm">
+                        </div>
+                    </div>
+
                     <div>
-                        <label class="block text-sm font-medium mb-1 text-gray-400">Harga (Rp)</label>
-                        <input type="number" id="inp-price" required class="w-full bg-gray-800 border border-gray-600 rounded p-2 text-white focus:border-blue-500">
+                        <label class="block text-xs text-gray-400 mb-1">Deskripsi</label>
+                        <textarea id="inp-desc" rows="2" class="w-full bg-gray-900 border border-gray-600 rounded p-2 text-white text-sm"></textarea>
                     </div>
-                    <div>
-                        <label class="block text-sm font-medium mb-1 text-gray-400">Link Default (Opsional)</label>
-                        <input type="url" id="inp-link" placeholder="Boleh kosong..." class="w-full bg-gray-800 border border-gray-600 rounded p-2 text-white focus:border-blue-500">
+
+                    <div class="bg-gray-900 p-3 rounded border border-gray-700">
+                        <div class="flex justify-between items-center mb-2">
+                            <label class="text-xs text-gray-400">Varian</label>
+                            <button type="button" onclick="addVariantInput()" class="text-[10px] bg-gray-700 hover:bg-gray-600 px-2 py-1 rounded text-white">Tambah</button>
+                        </div>
+                        <div id="variant-container" class="space-y-2"></div>
                     </div>
-                </div>
 
-                <div>
-                    <label class="block text-sm font-medium mb-1 text-gray-400">Deskripsi Singkat</label>
-                    <textarea id="inp-desc" rows="2" class="w-full bg-gray-800 border border-gray-600 rounded p-2 text-white focus:border-blue-500"></textarea>
-                </div>
+                    <button type="submit" id="btn-submit-prod" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded transition">Simpan Produk</button>
+                </form>
+            </div>
 
-                <div class="bg-gray-800 p-4 rounded border border-gray-700">
-                    <div class="flex justify-between items-center mb-2">
-                        <label class="text-sm font-medium text-gray-400">Varian (Opsional)</label>
-                        <button type="button" onclick="addVariantInput()" class="text-xs bg-gray-700 hover:bg-gray-600 px-2 py-1 rounded text-white"><i class="fa-solid fa-plus"></i> Tambah</button>
-                    </div>
-                    <div id="variant-container" class="space-y-2"></div>
-                </div>
-
-                <button type="submit" id="btn-submit" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded transition flex justify-center items-center gap-2">
-                    <span id="btn-text">Simpan Produk</span>
-                    <i id="btn-loading" class="fa-solid fa-spinner fa-spin hidden"></i>
-                </button>
-            </form>
-        </div>
-
-        <div class="bg-gray-900 p-6 md:p-8 rounded-lg shadow-xl border border-gray-700">
-            <h2 class="text-xl font-bold text-white mb-4 border-b border-gray-700 pb-2 flex justify-between">
-                <span><i class="fa-solid fa-list mr-2"></i> Daftar Produk</span>
-                <span class="text-xs font-normal text-gray-400">*Ganti angka di kotak untuk urutkan cepat</span>
-            </h2>
-            <div id="admin-product-list" class="space-y-3">
-                <p class="text-center text-gray-500 py-4">Memuat data...</p>
+            <div class="bg-gray-800 p-6 rounded-2xl shadow-xl border border-gray-700">
+                <h2 class="text-xl font-bold text-white mb-4"><i class="fa-solid fa-list mr-2"></i> Daftar Produk</h2>
+                <div id="admin-product-list" class="space-y-3"></div>
             </div>
         </div>
-    </div>
 
-    <div id="toast" class="fixed bottom-10 right-10 bg-emerald-600 text-white px-4 py-2 rounded shadow-lg opacity-0 transition-opacity duration-300 pointer-events-none z-50">
-        Perubahan Disimpan!
+        <div id="view-affiliates" class="hidden space-y-6">
+            
+            <div class="bg-gray-800 p-6 rounded-b-2xl rounded-tr-2xl shadow-xl border border-gray-700 border-t-0">
+                <h2 class="text-xl font-bold text-white mb-4"><i class="fa-solid fa-user-plus mr-2"></i> Tambah Affiliator</h2>
+                <form id="affiliateForm" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-xs text-gray-400 mb-1">Username (Login)</label>
+                        <input type="text" id="aff-username" required placeholder="misal: budi" class="w-full bg-gray-900 border border-gray-600 rounded p-2 text-white text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-400 mb-1">PIN (Password)</label>
+                        <input type="text" id="aff-pin" required placeholder="misal: 1234" class="w-full bg-gray-900 border border-gray-600 rounded p-2 text-white text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-400 mb-1">Nama Lengkap</label>
+                        <div class="flex gap-2">
+                            <input type="text" id="aff-fullname" required placeholder="Budi Santoso" class="w-full bg-gray-900 border border-gray-600 rounded p-2 text-white text-sm">
+                            <button type="submit" class="bg-emerald-600 hover:bg-emerald-500 text-white px-4 rounded text-sm font-bold"><i class="fa-solid fa-plus"></i></button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <div class="bg-gray-800 p-6 rounded-2xl shadow-xl border border-gray-700">
+                <h2 class="text-xl font-bold text-white mb-4"><i class="fa-solid fa-users-gear mr-2"></i> Data Tim Affiliator</h2>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-sm text-gray-400">
+                        <thead class="bg-gray-900 text-gray-200 uppercase text-xs">
+                            <tr>
+                                <th class="px-4 py-3 rounded-tl-lg">Nama</th>
+                                <th class="px-4 py-3">Username</th>
+                                <th class="px-4 py-3">PIN</th>
+                                <th class="px-4 py-3">Role</th>
+                                <th class="px-4 py-3 rounded-tr-lg text-center">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="affiliate-table-body" class="divide-y divide-gray-700">
+                            </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
     </div>
 
     <script>
@@ -113,17 +182,130 @@
         let isEditingId = null;
         let existingImageUrl = "";
 
-        window.addEventListener('load', fetchProducts);
+        // --- AUTH ADMIN SYSTEM ---
+        document.getElementById('login-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const username = document.getElementById('login-username').value.toLowerCase();
+            const pin = document.getElementById('login-pin').value;
 
-        // --- FETCH DATA (DENGAN SORTING) ---
+            // Cek ke database: apakah username ada, pin benar, DAN role = 'admin'
+            const { data, error } = await sb
+                .from('affiliators')
+                .select('*')
+                .eq('username', username)
+                .eq('pin', pin)
+                .eq('role', 'admin') // KUNCI PENGAMAN
+                .single();
+
+            if (data) {
+                // Login Sukses
+                document.getElementById('admin-login-modal').classList.add('hidden');
+                document.getElementById('dashboard-content').classList.remove('hidden');
+                document.getElementById('admin-name').innerText = data.full_name;
+                
+                // Load Data Awal
+                fetchProducts();
+                fetchAffiliates();
+            } else {
+                alert('Login Gagal! Pastikan Username/PIN benar dan Anda memiliki akses Admin.');
+            }
+        });
+
+        function handleLogout() {
+            location.reload(); // Refresh halaman untuk logout
+        }
+
+        // --- TAB SWITCHING SYSTEM ---
+        function switchTab(tabName) {
+            const viewProd = document.getElementById('view-products');
+            const viewAff = document.getElementById('view-affiliates');
+            const btnProd = document.getElementById('tab-products');
+            const btnAff = document.getElementById('tab-affiliates');
+
+            if (tabName === 'products') {
+                viewProd.classList.remove('hidden');
+                viewAff.classList.add('hidden');
+                btnProd.className = "active-tab px-6 py-3 rounded-t-lg font-bold border-t border-x transition flex items-center gap-2";
+                btnAff.className = "inactive-tab px-6 py-3 rounded-t-lg font-bold border-t border-x transition flex items-center gap-2";
+            } else {
+                viewProd.classList.add('hidden');
+                viewAff.classList.remove('hidden');
+                btnProd.className = "inactive-tab px-6 py-3 rounded-t-lg font-bold border-t border-x transition flex items-center gap-2";
+                btnAff.className = "active-tab px-6 py-3 rounded-t-lg font-bold border-t border-x transition flex items-center gap-2";
+            }
+        }
+
+        // ==========================================
+        // FITUR 1: KELOLA AFFILIATOR (BARU)
+        // ==========================================
+        
+        // 1. Ambil Data Affiliator
+        async function fetchAffiliates() {
+            const tbody = document.getElementById('affiliate-table-body');
+            const { data, error } = await sb.from('affiliators').select('*').order('id', {ascending: true});
+            
+            if (error) return console.error(error);
+            
+            tbody.innerHTML = '';
+            data.forEach(user => {
+                // Jangan tampilkan tombol hapus untuk admin sendiri
+                const deleteBtn = user.role === 'admin' 
+                    ? '<span class="text-xs text-gray-500 italic">Super Admin</span>' 
+                    : `<button onclick="deleteAffiliate(${user.id}, '${user.username}')" class="bg-red-500/20 text-red-400 hover:bg-red-500 hover:text-white px-2 py-1 rounded transition"><i class="fa-solid fa-trash"></i></button>`;
+
+                const row = `
+                    <tr class="hover:bg-gray-800 transition">
+                        <td class="px-4 py-3 font-bold text-white">${user.full_name || '-'}</td>
+                        <td class="px-4 py-3 text-emerald-400">${user.username}</td>
+                        <td class="px-4 py-3 font-mono text-gray-300">${user.pin}</td>
+                        <td class="px-4 py-3"><span class="bg-gray-700 px-2 py-1 rounded text-xs">${user.role || 'affiliate'}</span></td>
+                        <td class="px-4 py-3 text-center">${deleteBtn}</td>
+                    </tr>
+                `;
+                tbody.innerHTML += row;
+            });
+        }
+
+        // 2. Tambah Affiliator
+        document.getElementById('affiliateForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const username = document.getElementById('aff-username').value.toLowerCase().replace(/\s/g, '');
+            const pin = document.getElementById('aff-pin').value;
+            const fullname = document.getElementById('aff-fullname').value;
+
+            const { error } = await sb.from('affiliators').insert({
+                username: username,
+                pin: pin,
+                full_name: fullname,
+                role: 'affiliate' // Default role
+            });
+
+            if (error) {
+                alert('Gagal tambah: ' + error.message);
+            } else {
+                alert('Affiliator Berhasil Ditambahkan!');
+                document.getElementById('affiliateForm').reset();
+                fetchAffiliates();
+            }
+        });
+
+        // 3. Hapus Affiliator
+        async function deleteAffiliate(id, username) {
+            if(confirm(`Yakin ingin menghapus affiliator "${username}"? Mereka tidak akan bisa login lagi.`)) {
+                const { error } = await sb.from('affiliators').delete().eq('id', id);
+                if (!error) fetchAffiliates();
+                else alert('Gagal hapus');
+            }
+        }
+
+
+        // ==========================================
+        // FITUR 2: KELOLA PRODUK (SAMA SEPERTI SEBELUMNYA)
+        // ==========================================
+
         async function fetchProducts() {
             const container = document.getElementById('admin-product-list');
-            
-            // SORT BY 'sort_order' ASCENDING (Kecil ke Besar)
-            let { data: products, error } = await sb
-                .from('products')
-                .select('*')
-                .order('sort_order', { ascending: true });
+            let { data: products, error } = await sb.from('products').select('*').order('sort_order', { ascending: true });
 
             if (error || !products.length) {
                 container.innerHTML = '<p class="text-gray-500 text-center">Belum ada produk.</p>';
@@ -133,111 +315,52 @@
             container.innerHTML = '';
             products.forEach(prod => {
                 const item = document.createElement('div');
-                item.className = "flex items-center gap-4 bg-gray-800 p-3 rounded border border-gray-700 hover:border-gray-500 transition";
+                item.className = "flex items-center gap-4 bg-gray-900 p-3 rounded border border-gray-700 hover:border-gray-500 transition";
                 
-                const linkStatus = prod.default_link ? '<i class="fa-solid fa-check text-green-500"></i>' : '<i class="fa-solid fa-times text-red-500"></i>';
-
                 item.innerHTML = `
                     <div class="flex flex-col items-center gap-1">
                         <label class="text-[9px] text-gray-500">Urut</label>
                         <input type="number" value="${prod.sort_order || 999}" 
                             onchange="quickUpdateSort(${prod.id}, this.value)"
-                            class="w-12 bg-gray-900 border border-gray-600 text-center text-white rounded p-1 text-sm focus:border-emerald-500">
+                            class="w-12 bg-gray-800 border border-gray-600 text-center text-white rounded p-1 text-xs focus:border-emerald-500">
                     </div>
-
-                    <img src="${prod.image_url || 'https://via.placeholder.com/100?text=No+Img'}" class="w-14 h-14 rounded object-cover bg-gray-700">
-                    
+                    <img src="${prod.image_url || 'https://via.placeholder.com/100?text=No+Img'}" class="w-12 h-12 rounded object-cover bg-gray-800">
                     <div class="flex-1 min-w-0">
                         <div class="flex items-center gap-2">
-                            <span class="text-xs font-bold bg-yellow-600 text-black px-1 rounded">${prod.product_code || '-'}</span>
+                            <span class="text-[10px] font-bold bg-yellow-600 text-black px-1 rounded">${prod.product_code || '-'}</span>
                             <h3 class="font-bold text-white truncate text-sm">${prod.name}</h3>
                         </div>
-                        <div class="flex items-center gap-3 mt-1 text-xs text-gray-400">
-                            <span>Rp ${prod.price.toLocaleString()}</span>
-                            <span>Link: ${linkStatus}</span>
-                        </div>
+                        <p class="text-xs text-green-400">Rp ${prod.price.toLocaleString()}</p>
                     </div>
-
                     <div class="flex gap-2">
-                        <button onclick='prepareEdit(${JSON.stringify(prod)})' class="bg-blue-600 hover:bg-blue-700 text-white w-8 h-8 flex items-center justify-center rounded text-sm"><i class="fa-solid fa-pen"></i></button>
-                        <button onclick="deleteProduct(${prod.id}, '${prod.name}')" class="bg-red-600 hover:bg-red-700 text-white w-8 h-8 flex items-center justify-center rounded text-sm"><i class="fa-solid fa-trash"></i></button>
+                        <button onclick='prepareEdit(${JSON.stringify(prod)})' class="bg-blue-600 hover:bg-blue-700 text-white w-8 h-8 flex items-center justify-center rounded text-xs"><i class="fa-solid fa-pen"></i></button>
+                        <button onclick="deleteProduct(${prod.id}, '${prod.name}')" class="bg-red-600 hover:bg-red-700 text-white w-8 h-8 flex items-center justify-center rounded text-xs"><i class="fa-solid fa-trash"></i></button>
                     </div>
                 `;
                 container.appendChild(item);
             });
         }
 
-        // --- UPDATE SORT CEPAT (TANPA FORM) ---
         async function quickUpdateSort(id, newSort) {
-            const { error } = await sb.from('products').update({ sort_order: newSort }).eq('id', id);
-            if (!error) {
-                showToast();
-                // Opsional: Refresh list agar urutan berubah langsung
-                // fetchProducts(); 
-                // Atau biarkan user refresh manual jika ingin melihat hasil sort
-            } else {
-                alert('Gagal update urutan');
-            }
+            await sb.from('products').update({ sort_order: newSort }).eq('id', id);
         }
 
-        function showToast() {
-            const t = document.getElementById('toast');
-            t.classList.remove('opacity-0');
-            setTimeout(() => t.classList.add('opacity-0'), 2000);
-        }
-
-        // --- CSV IMPORT ---
-        document.getElementById('csv-input').addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (!file) return;
-
-            if(!confirm("Lanjut import CSV?")) { this.value = ''; return; }
-
-            Papa.parse(file, {
-                header: true,
-                skipEmptyLines: true,
-                complete: async function(results) {
-                    const rows = results.data;
-                    let successCount = 0;
-                    for (let row of rows) {
-                        try {
-                            const payload = {
-                                product_code: row.product_code || `CSV-${Date.now()}`,
-                                name: row.name || 'Tanpa Nama',
-                                price: parseInt(row.price) || 0,
-                                description: row.description || '',
-                                default_link: row.default_link || '',
-                                image_url: row.image_url || '',
-                                variants: row.variants ? JSON.parse(row.variants) : [],
-                                sort_order: 999 // Default urutan paling bawah
-                            };
-                            await sb.from('products').insert(payload);
-                            successCount++;
-                        } catch (err) { console.error(err); }
-                    }
-                    alert(`Import ${successCount} produk berhasil!`);
-                    fetchProducts();
-                    e.target.value = '';
-                }
-            });
-        });
-
-        // --- CRUD BIASA ---
         async function deleteProduct(id, name) {
             if(confirm(`Hapus "${name}"?`)) {
                 await sb.from('products').delete().eq('id', id);
                 fetchProducts();
-                if(isEditingId === id) resetForm();
+                if(isEditingId === id) resetProductForm();
             }
         }
 
         function prepareEdit(prod) {
             isEditingId = prod.id;
             existingImageUrl = prod.image_url;
+            
             document.getElementById('form-title').innerText = `Edit: ${prod.product_code}`;
-            document.getElementById('btn-text').innerText = "Update Produk";
-            document.getElementById('btn-submit').className = "w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded transition flex justify-center items-center gap-2";
             document.getElementById('btn-cancel').classList.remove('hidden');
+            document.getElementById('btn-submit-prod').innerText = "Update Produk";
+            document.getElementById('btn-submit-prod').className = "w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded transition";
 
             document.getElementById('inp-sort').value = prod.sort_order || 999;
             document.getElementById('inp-code').value = prod.product_code || '';
@@ -251,10 +374,6 @@
                 previewImg.src = prod.image_url;
                 previewImg.classList.remove('hidden');
                 document.getElementById('preview-icon').classList.add('hidden');
-            } else {
-                previewImg.src = "";
-                previewImg.classList.add('hidden');
-                document.getElementById('preview-icon').classList.remove('hidden');
             }
 
             const container = document.getElementById('variant-container');
@@ -262,22 +381,19 @@
             let variants = [];
             try { variants = typeof prod.variants === 'string' ? JSON.parse(prod.variants) : prod.variants; } catch(e){}
             if(variants && variants.length) variants.forEach(v => addVariantInput(v.name));
-
-            document.getElementById('form-section').scrollIntoView();
         }
 
-        function resetForm() {
+        function resetProductForm() {
             isEditingId = null;
             existingImageUrl = "";
             document.getElementById('productForm').reset();
             document.getElementById('variant-container').innerHTML = '';
             document.getElementById('preview-img').classList.add('hidden');
             document.getElementById('preview-icon').classList.remove('hidden');
-            document.getElementById('form-title').innerText = "Input Produk Manual";
-            document.getElementById('btn-text').innerText = "Simpan Produk";
-            document.getElementById('btn-submit').className = "w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded transition flex justify-center items-center gap-2";
+            document.getElementById('form-title').innerText = "Input Produk";
             document.getElementById('btn-cancel').classList.add('hidden');
-            document.getElementById('inp-sort').value = ""; 
+            document.getElementById('btn-submit-prod').innerText = "Simpan Produk";
+            document.getElementById('btn-submit-prod').className = "w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded transition";
         }
 
         function addVariantInput(value = '') {
@@ -285,7 +401,7 @@
             const div = document.createElement('div');
             div.className = 'flex gap-2';
             div.innerHTML = `
-                <input type="text" value="${value}" placeholder="Varian" class="variant-input w-full bg-gray-900 border border-gray-600 rounded p-2 text-sm text-white">
+                <input type="text" value="${value}" placeholder="Varian" class="variant-input w-full bg-gray-900 border border-gray-600 rounded p-2 text-xs text-white">
                 <button type="button" onclick="this.parentElement.remove()" class="text-red-400 hover:text-red-300 px-2"><i class="fa-solid fa-trash"></i></button>
             `;
             container.appendChild(div);
@@ -306,9 +422,10 @@
 
         document.getElementById('productForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const btn = document.getElementById('btn-submit');
+            const btn = document.getElementById('btn-submit-prod');
+            const originalText = btn.innerText;
             btn.disabled = true;
-            document.getElementById('btn-loading').classList.remove('hidden');
+            btn.innerText = "Memproses...";
 
             const sortOrder = document.getElementById('inp-sort').value || 999;
             const code = document.getElementById('inp-code').value;
@@ -335,10 +452,8 @@
                 }
 
                 const payload = { 
-                    sort_order: sortOrder,
-                    product_code: code, name, price, description: desc, 
-                    default_link: defaultLink, image_url: imageUrl, 
-                    variants: JSON.stringify(variants) 
+                    sort_order: sortOrder, product_code: code, name, price, description: desc, 
+                    default_link: defaultLink, image_url: imageUrl, variants: JSON.stringify(variants) 
                 };
 
                 const { error } = isEditingId 
@@ -346,15 +461,48 @@
                     : await sb.from('products').insert(payload);
 
                 if (error) throw error;
-                showToast();
-                resetForm();
+                alert(isEditingId ? 'Update Berhasil!' : 'Simpan Berhasil!');
+                resetProductForm();
                 fetchProducts();
             } catch (err) {
                 alert('Error: ' + err.message);
             } finally {
                 btn.disabled = false;
-                document.getElementById('btn-loading').classList.add('hidden');
+                btn.innerText = originalText;
             }
+        });
+
+        // CSV Import (Sama)
+        document.getElementById('csv-input').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            if(!confirm("Lanjut import CSV?")) { this.value = ''; return; }
+            Papa.parse(file, {
+                header: true, skipEmptyLines: true,
+                complete: async function(results) {
+                    const rows = results.data;
+                    let successCount = 0;
+                    for (let row of rows) {
+                        try {
+                            const payload = {
+                                product_code: row.product_code || `CSV-${Date.now()}`,
+                                name: row.name || 'Tanpa Nama',
+                                price: parseInt(row.price) || 0,
+                                description: row.description || '',
+                                default_link: row.default_link || '',
+                                image_url: row.image_url || '',
+                                variants: row.variants ? JSON.parse(row.variants) : [],
+                                sort_order: 999
+                            };
+                            await sb.from('products').insert(payload);
+                            successCount++;
+                        } catch (err) { console.error(err); }
+                    }
+                    alert(`Import ${successCount} produk berhasil!`);
+                    fetchProducts();
+                    e.target.value = '';
+                }
+            });
         });
     </script>
 </body>
