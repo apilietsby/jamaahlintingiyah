@@ -6,30 +6,31 @@
     <title>Admin Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <style>
-        /* Agar scroll smooth saat klik edit */
-        html { scroll-behavior: smooth; }
-    </style>
+    <style>html { scroll-behavior: smooth; }</style>
 </head>
 <body class="bg-gray-800 min-h-screen p-4 md:p-8 text-gray-100">
 
     <div class="max-w-4xl mx-auto space-y-8">
         
+        <div class="flex justify-between items-center bg-gray-900 p-4 rounded-lg border border-gray-700 shadow-xl">
+            <h1 class="text-xl font-bold text-white"><i class="fa-solid fa-layer-group mr-2"></i> Admin Panel</h1>
+            <input type="file" id="csv-input" accept=".csv" class="hidden">
+            <button onclick="document.getElementById('csv-input').click()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded text-sm font-bold flex items-center gap-2 transition">
+                <i class="fa-solid fa-file-csv"></i> Import CSV
+            </button>
+        </div>
+
         <div id="form-section" class="bg-gray-900 p-6 md:p-8 rounded-lg shadow-xl border border-gray-700">
             <div class="flex justify-between items-center mb-6 border-b border-gray-700 pb-2">
-                <h1 class="text-2xl font-bold text-white">
-                    <i class="fa-solid fa-layer-group mr-2"></i> <span id="form-title">Input Produk Baru</span>
-                </h1>
-                <button onclick="resetForm()" id="btn-cancel" class="hidden text-sm text-red-400 hover:text-red-300">
-                    <i class="fa-solid fa-times"></i> Batal Edit
-                </button>
+                <h2 class="text-xl font-bold text-white"><span id="form-title">Input Produk Manual</span></h2>
+                <button onclick="resetForm()" id="btn-cancel" class="hidden text-sm text-red-400 hover:text-red-300"><i class="fa-solid fa-times"></i> Batal Edit</button>
             </div>
 
             <form id="productForm" class="space-y-6">
-                
                 <div>
-                    <label class="block text-sm font-medium mb-2 text-gray-400">Foto Produk (Wajib 1:1)</label>
+                    <label class="block text-sm font-medium mb-2 text-gray-400">Foto Produk</label>
                     <div class="flex items-center gap-4">
                         <div class="w-24 h-24 bg-gray-700 rounded flex items-center justify-center overflow-hidden border border-gray-600 relative group">
                             <img id="preview-img" src="" class="w-full h-full object-cover hidden">
@@ -37,13 +38,18 @@
                         </div>
                         <div class="flex-1">
                             <input type="file" id="inp-file" accept="image/*" class="w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-700 cursor-pointer">
-                            <p class="text-xs text-gray-500 mt-1">*Biarkan kosong jika edit produk tanpa mengubah gambar.</p>
+                            <p class="text-xs text-gray-500 mt-1">*Kosongkan jika tidak ingin mengubah gambar saat edit.</p>
                         </div>
                     </div>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div>
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div class="md:col-span-1">
+                        <label class="block text-sm font-medium mb-1 text-emerald-400 font-bold">No. Urut</label>
+                        <input type="number" id="inp-sort" placeholder="1" class="w-full bg-gray-800 border border-gray-600 rounded p-2 text-white focus:border-emerald-500" title="Semakin kecil angka, semakin di atas posisinya">
+                        <p class="text-[10px] text-gray-500 mt-1">*1 = Paling Atas</p>
+                    </div>
+                    <div class="md:col-span-1">
                         <label class="block text-sm font-medium mb-1 text-yellow-400 font-bold">KODE (Wajib)</label>
                         <input type="text" id="inp-code" required placeholder="A001" class="w-full bg-gray-800 border border-gray-600 rounded p-2 text-white focus:border-blue-500">
                     </div>
@@ -59,8 +65,8 @@
                         <input type="number" id="inp-price" required class="w-full bg-gray-800 border border-gray-600 rounded p-2 text-white focus:border-blue-500">
                     </div>
                     <div>
-                        <label class="block text-sm font-medium mb-1 text-gray-400">Link Default</label>
-                        <input type="url" id="inp-link" required placeholder="https://..." class="w-full bg-gray-800 border border-gray-600 rounded p-2 text-white focus:border-blue-500">
+                        <label class="block text-sm font-medium mb-1 text-gray-400">Link Default (Opsional)</label>
+                        <input type="url" id="inp-link" placeholder="Boleh kosong..." class="w-full bg-gray-800 border border-gray-600 rounded p-2 text-white focus:border-blue-500">
                     </div>
                 </div>
 
@@ -72,9 +78,7 @@
                 <div class="bg-gray-800 p-4 rounded border border-gray-700">
                     <div class="flex justify-between items-center mb-2">
                         <label class="text-sm font-medium text-gray-400">Varian (Opsional)</label>
-                        <button type="button" onclick="addVariantInput()" class="text-xs bg-gray-700 hover:bg-gray-600 px-2 py-1 rounded text-white">
-                            <i class="fa-solid fa-plus"></i> Tambah
-                        </button>
+                        <button type="button" onclick="addVariantInput()" class="text-xs bg-gray-700 hover:bg-gray-600 px-2 py-1 rounded text-white"><i class="fa-solid fa-plus"></i> Tambah</button>
                     </div>
                     <div id="variant-container" class="space-y-2"></div>
                 </div>
@@ -87,135 +91,178 @@
         </div>
 
         <div class="bg-gray-900 p-6 md:p-8 rounded-lg shadow-xl border border-gray-700">
-            <h2 class="text-xl font-bold text-white mb-4 border-b border-gray-700 pb-2">
-                <i class="fa-solid fa-list mr-2"></i> Daftar Produk
+            <h2 class="text-xl font-bold text-white mb-4 border-b border-gray-700 pb-2 flex justify-between">
+                <span><i class="fa-solid fa-list mr-2"></i> Daftar Produk</span>
+                <span class="text-xs font-normal text-gray-400">*Ganti angka di kotak untuk urutkan cepat</span>
             </h2>
-            
             <div id="admin-product-list" class="space-y-3">
                 <p class="text-center text-gray-500 py-4">Memuat data...</p>
             </div>
         </div>
+    </div>
 
+    <div id="toast" class="fixed bottom-10 right-10 bg-emerald-600 text-white px-4 py-2 rounded shadow-lg opacity-0 transition-opacity duration-300 pointer-events-none z-50">
+        Perubahan Disimpan!
     </div>
 
     <script>
-        // --- KONFIGURASI SUPABASE ---
         const SUPABASE_URL = 'https://qqyggahvwtysefbmpoqr.supabase.co'; 
         const SUPABASE_KEY = 'sb_publishable_vQfgDnxOeq0F6hykqwUI_g_FxWZYRCP'; 
         const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        // --- STATE ---
-        let isEditingId = null; // Menyimpan ID produk yg sedang diedit
-        let existingImageUrl = ""; // Menyimpan URL gambar lama saat edit
+        let isEditingId = null;
+        let existingImageUrl = "";
 
-        // --- LOAD DATA SAAT MULAI ---
         window.addEventListener('load', fetchProducts);
 
-        // --- FUNGSI UTAMA 1: AMBIL DATA ---
+        // --- FETCH DATA (DENGAN SORTING) ---
         async function fetchProducts() {
             const container = document.getElementById('admin-product-list');
             
+            // SORT BY 'sort_order' ASCENDING (Kecil ke Besar)
             let { data: products, error } = await sb
                 .from('products')
                 .select('*')
-                .order('id', { ascending: false }); // Produk terbaru di atas
+                .order('sort_order', { ascending: true });
 
-            if (error) {
-                container.innerHTML = '<p class="text-red-400 text-center">Gagal memuat data.</p>';
-                return;
-            }
-
-            if (products.length === 0) {
+            if (error || !products.length) {
                 container.innerHTML = '<p class="text-gray-500 text-center">Belum ada produk.</p>';
                 return;
             }
 
             container.innerHTML = '';
             products.forEach(prod => {
-                // Tampilan List Horizontal
                 const item = document.createElement('div');
                 item.className = "flex items-center gap-4 bg-gray-800 p-3 rounded border border-gray-700 hover:border-gray-500 transition";
                 
+                const linkStatus = prod.default_link ? '<i class="fa-solid fa-check text-green-500"></i>' : '<i class="fa-solid fa-times text-red-500"></i>';
+
                 item.innerHTML = `
-                    <img src="${prod.image_url || 'https://via.placeholder.com/100'}" class="w-16 h-16 rounded object-cover bg-gray-700">
+                    <div class="flex flex-col items-center gap-1">
+                        <label class="text-[9px] text-gray-500">Urut</label>
+                        <input type="number" value="${prod.sort_order || 999}" 
+                            onchange="quickUpdateSort(${prod.id}, this.value)"
+                            class="w-12 bg-gray-900 border border-gray-600 text-center text-white rounded p-1 text-sm focus:border-emerald-500">
+                    </div>
+
+                    <img src="${prod.image_url || 'https://via.placeholder.com/100?text=No+Img'}" class="w-14 h-14 rounded object-cover bg-gray-700">
                     
                     <div class="flex-1 min-w-0">
                         <div class="flex items-center gap-2">
                             <span class="text-xs font-bold bg-yellow-600 text-black px-1 rounded">${prod.product_code || '-'}</span>
-                            <h3 class="font-bold text-white truncate">${prod.name}</h3>
+                            <h3 class="font-bold text-white truncate text-sm">${prod.name}</h3>
                         </div>
-                        <p class="text-sm text-green-400">Rp ${prod.price.toLocaleString()}</p>
+                        <div class="flex items-center gap-3 mt-1 text-xs text-gray-400">
+                            <span>Rp ${prod.price.toLocaleString()}</span>
+                            <span>Link: ${linkStatus}</span>
+                        </div>
                     </div>
 
                     <div class="flex gap-2">
-                        <button onclick='prepareEdit(${JSON.stringify(prod)})' class="bg-blue-600 hover:bg-blue-700 text-white p-2 rounded text-sm" title="Edit">
-                            <i class="fa-solid fa-pen"></i>
-                        </button>
-                        <button onclick="deleteProduct(${prod.id}, '${prod.name}')" class="bg-red-600 hover:bg-red-700 text-white p-2 rounded text-sm" title="Hapus">
-                            <i class="fa-solid fa-trash"></i>
-                        </button>
+                        <button onclick='prepareEdit(${JSON.stringify(prod)})' class="bg-blue-600 hover:bg-blue-700 text-white w-8 h-8 flex items-center justify-center rounded text-sm"><i class="fa-solid fa-pen"></i></button>
+                        <button onclick="deleteProduct(${prod.id}, '${prod.name}')" class="bg-red-600 hover:bg-red-700 text-white w-8 h-8 flex items-center justify-center rounded text-sm"><i class="fa-solid fa-trash"></i></button>
                     </div>
                 `;
                 container.appendChild(item);
             });
         }
 
-        // --- FUNGSI UTAMA 2: HAPUS DATA ---
-        async function deleteProduct(id, name) {
-            if(!confirm(`Yakin ingin menghapus produk "${name}"?`)) return;
-
-            // Hapus dari database (Gambar di storage biarkan saja atau hapus manual agar aman)
-            const { error } = await sb.from('products').delete().eq('id', id);
-
-            if (error) {
-                alert('Gagal menghapus: ' + error.message);
+        // --- UPDATE SORT CEPAT (TANPA FORM) ---
+        async function quickUpdateSort(id, newSort) {
+            const { error } = await sb.from('products').update({ sort_order: newSort }).eq('id', id);
+            if (!error) {
+                showToast();
+                // Opsional: Refresh list agar urutan berubah langsung
+                // fetchProducts(); 
+                // Atau biarkan user refresh manual jika ingin melihat hasil sort
             } else {
-                fetchProducts(); // Refresh list tanpa reload halaman
-                // Jika sedang mengedit produk yang dihapus, reset form
+                alert('Gagal update urutan');
+            }
+        }
+
+        function showToast() {
+            const t = document.getElementById('toast');
+            t.classList.remove('opacity-0');
+            setTimeout(() => t.classList.add('opacity-0'), 2000);
+        }
+
+        // --- CSV IMPORT ---
+        document.getElementById('csv-input').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            if(!confirm("Lanjut import CSV?")) { this.value = ''; return; }
+
+            Papa.parse(file, {
+                header: true,
+                skipEmptyLines: true,
+                complete: async function(results) {
+                    const rows = results.data;
+                    let successCount = 0;
+                    for (let row of rows) {
+                        try {
+                            const payload = {
+                                product_code: row.product_code || `CSV-${Date.now()}`,
+                                name: row.name || 'Tanpa Nama',
+                                price: parseInt(row.price) || 0,
+                                description: row.description || '',
+                                default_link: row.default_link || '',
+                                image_url: row.image_url || '',
+                                variants: row.variants ? JSON.parse(row.variants) : [],
+                                sort_order: 999 // Default urutan paling bawah
+                            };
+                            await sb.from('products').insert(payload);
+                            successCount++;
+                        } catch (err) { console.error(err); }
+                    }
+                    alert(`Import ${successCount} produk berhasil!`);
+                    fetchProducts();
+                    e.target.value = '';
+                }
+            });
+        });
+
+        // --- CRUD BIASA ---
+        async function deleteProduct(id, name) {
+            if(confirm(`Hapus "${name}"?`)) {
+                await sb.from('products').delete().eq('id', id);
+                fetchProducts();
                 if(isEditingId === id) resetForm();
             }
         }
 
-        // --- FUNGSI UTAMA 3: PERSIAPAN EDIT ---
         function prepareEdit(prod) {
-            // 1. Set State
             isEditingId = prod.id;
             existingImageUrl = prod.image_url;
-
-            // 2. Ubah Tampilan Form
-            document.getElementById('form-title').innerText = `Edit Produk: ${prod.product_code}`;
+            document.getElementById('form-title').innerText = `Edit: ${prod.product_code}`;
             document.getElementById('btn-text').innerText = "Update Produk";
-            document.getElementById('btn-submit').classList.remove('bg-green-600', 'hover:bg-green-700');
-            document.getElementById('btn-submit').classList.add('bg-blue-600', 'hover:bg-blue-700');
+            document.getElementById('btn-submit').className = "w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded transition flex justify-center items-center gap-2";
             document.getElementById('btn-cancel').classList.remove('hidden');
 
-            // 3. Isi Input
+            document.getElementById('inp-sort').value = prod.sort_order || 999;
             document.getElementById('inp-code').value = prod.product_code || '';
             document.getElementById('inp-name').value = prod.name;
             document.getElementById('inp-price').value = prod.price;
-            document.getElementById('inp-link').value = prod.default_link;
+            document.getElementById('inp-link').value = prod.default_link || '';
             document.getElementById('inp-desc').value = prod.description || '';
             
-            // Preview Gambar Lama
             const previewImg = document.getElementById('preview-img');
-            const previewIcon = document.getElementById('preview-icon');
             if(prod.image_url) {
                 previewImg.src = prod.image_url;
                 previewImg.classList.remove('hidden');
-                previewIcon.classList.add('hidden');
+                document.getElementById('preview-icon').classList.add('hidden');
+            } else {
+                previewImg.src = "";
+                previewImg.classList.add('hidden');
+                document.getElementById('preview-icon').classList.remove('hidden');
             }
 
-            // Isi Varian
             const container = document.getElementById('variant-container');
             container.innerHTML = '';
             let variants = [];
             try { variants = typeof prod.variants === 'string' ? JSON.parse(prod.variants) : prod.variants; } catch(e){}
-            
-            if(variants && variants.length > 0) {
-                variants.forEach(v => addVariantInput(v.name));
-            }
+            if(variants && variants.length) variants.forEach(v => addVariantInput(v.name));
 
-            // Scroll ke atas
             document.getElementById('form-section').scrollIntoView();
         }
 
@@ -224,31 +271,26 @@
             existingImageUrl = "";
             document.getElementById('productForm').reset();
             document.getElementById('variant-container').innerHTML = '';
-            document.getElementById('preview-img').src = "";
             document.getElementById('preview-img').classList.add('hidden');
             document.getElementById('preview-icon').classList.remove('hidden');
-
-            // Kembalikan Tampilan Tombol
-            document.getElementById('form-title').innerText = "Input Produk Baru";
+            document.getElementById('form-title').innerText = "Input Produk Manual";
             document.getElementById('btn-text').innerText = "Simpan Produk";
-            document.getElementById('btn-submit').classList.add('bg-green-600', 'hover:bg-green-700');
-            document.getElementById('btn-submit').classList.remove('bg-blue-600', 'hover:bg-blue-700');
+            document.getElementById('btn-submit').className = "w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded transition flex justify-center items-center gap-2";
             document.getElementById('btn-cancel').classList.add('hidden');
+            document.getElementById('inp-sort').value = ""; 
         }
 
-        // --- FUNGSI PENDUKUNG ---
         function addVariantInput(value = '') {
             const container = document.getElementById('variant-container');
             const div = document.createElement('div');
             div.className = 'flex gap-2';
             div.innerHTML = `
-                <input type="text" value="${value}" placeholder="Contoh: Merah XL" class="variant-input w-full bg-gray-900 border border-gray-600 rounded p-2 text-sm text-white">
+                <input type="text" value="${value}" placeholder="Varian" class="variant-input w-full bg-gray-900 border border-gray-600 rounded p-2 text-sm text-white">
                 <button type="button" onclick="this.parentElement.remove()" class="text-red-400 hover:text-red-300 px-2"><i class="fa-solid fa-trash"></i></button>
             `;
             container.appendChild(div);
         }
 
-        // Preview Gambar saat pilih file
         document.getElementById('inp-file').addEventListener('change', function(e) {
             const file = e.target.files[0];
             if (file) {
@@ -262,12 +304,13 @@
             }
         });
 
-        // --- FUNGSI UTAMA 4: SIMPAN / UPDATE ---
         document.getElementById('productForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            setLoading(true);
+            const btn = document.getElementById('btn-submit');
+            btn.disabled = true;
+            document.getElementById('btn-loading').classList.remove('hidden');
 
-            // Ambil Data
+            const sortOrder = document.getElementById('inp-sort').value || 999;
             const code = document.getElementById('inp-code').value;
             const name = document.getElementById('inp-name').value;
             const price = document.getElementById('inp-price').value;
@@ -275,86 +318,44 @@
             const defaultLink = document.getElementById('inp-link').value;
             const fileInput = document.getElementById('inp-file');
 
-            const variantInputs = document.querySelectorAll('.variant-input');
             let variants = [];
-            variantInputs.forEach(inp => {
-                if(inp.value.trim() !== "") variants.push({ name: inp.value.trim() });
+            document.querySelectorAll('.variant-input').forEach(inp => {
+                if(inp.value.trim()) variants.push({ name: inp.value.trim() });
             });
 
             try {
-                let imageUrl = existingImageUrl; // Default pakai yang lama
-
-                // Cek apakah user upload gambar baru
+                let imageUrl = existingImageUrl;
                 if (fileInput.files.length > 0) {
                     const file = fileInput.files[0];
-                    const fileExt = file.name.split('.').pop();
-                    const fileName = `${Date.now()}.${fileExt}`; 
-                    
+                    const fileName = `${Date.now()}.${file.name.split('.').pop()}`;
                     const { error: uploadError } = await sb.storage.from('product-images').upload(fileName, file);
                     if (uploadError) throw uploadError;
-
                     const { data } = sb.storage.from('product-images').getPublicUrl(fileName);
                     imageUrl = data.publicUrl;
                 }
 
-                const payload = {
-                    product_code: code,
-                    name: name,
-                    price: price,
-                    description: desc,
-                    default_link: defaultLink,
-                    image_url: imageUrl,
-                    variants: JSON.stringify(variants)
+                const payload = { 
+                    sort_order: sortOrder,
+                    product_code: code, name, price, description: desc, 
+                    default_link: defaultLink, image_url: imageUrl, 
+                    variants: JSON.stringify(variants) 
                 };
 
-                let error = null;
-
-                if (isEditingId) {
-                    // MODE UPDATE
-                    const { error: updateError } = await sb
-                        .from('products')
-                        .update(payload)
-                        .eq('id', isEditingId);
-                    error = updateError;
-                } else {
-                    // MODE INSERT BARU
-                    const { error: insertError } = await sb
-                        .from('products')
-                        .insert(payload);
-                    error = insertError;
-                }
+                const { error } = isEditingId 
+                    ? await sb.from('products').update(payload).eq('id', isEditingId)
+                    : await sb.from('products').insert(payload);
 
                 if (error) throw error;
-
-                alert(isEditingId ? 'Produk berhasil diupdate!' : 'Produk berhasil disimpan!');
+                showToast();
                 resetForm();
-                fetchProducts(); // Refresh list
-
+                fetchProducts();
             } catch (err) {
-                console.error(err);
-                alert('Terjadi kesalahan: ' + err.message);
+                alert('Error: ' + err.message);
             } finally {
-                setLoading(false);
+                btn.disabled = false;
+                document.getElementById('btn-loading').classList.add('hidden');
             }
         });
-
-        function setLoading(isLoading) {
-            const btnText = document.getElementById('btn-text');
-            const btnIcon = document.getElementById('btn-loading');
-            const btn = document.getElementById('btn-submit');
-            
-            if (isLoading) {
-                btnText.innerText = 'Memproses...';
-                btnIcon.classList.remove('hidden');
-                btn.disabled = true;
-                btn.classList.add('opacity-50', 'cursor-not-allowed');
-            } else {
-                btnText.innerText = isEditingId ? 'Update Produk' : 'Simpan Produk';
-                btnIcon.classList.add('hidden');
-                btn.disabled = false;
-                btn.classList.remove('opacity-50', 'cursor-not-allowed');
-            }
-        }
     </script>
 </body>
 </html>
