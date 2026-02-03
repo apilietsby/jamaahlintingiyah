@@ -18,7 +18,7 @@
         <form id="productForm" class="space-y-6">
             
             <div>
-                <label class="block text-sm font-medium mb-2 text-gray-400">Foto Produk</label>
+                <label class="block text-sm font-medium mb-2 text-gray-400">Foto Produk (Wajib 1:1 / Kotak)</label>
                 <div class="flex items-center gap-4">
                     <div class="w-24 h-24 bg-gray-700 rounded flex items-center justify-center overflow-hidden border border-gray-600">
                         <img id="preview-img" src="" class="w-full h-full object-cover hidden">
@@ -29,6 +29,11 @@
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="col-span-1 md:col-span-2">
+                    <label class="block text-sm font-medium mb-1 text-yellow-400 font-bold">KODE PRODUK (Wajib)</label>
+                    <input type="text" id="inp-code" required placeholder="Contoh: A001" class="w-full bg-gray-800 border border-gray-600 rounded p-2 text-white focus:outline-none focus:border-blue-500">
+                </div>
+
                 <div>
                     <label class="block text-sm font-medium mb-1 text-gray-400">Nama Produk</label>
                     <input type="text" id="inp-name" required class="w-full bg-gray-800 border border-gray-600 rounded p-2 text-white focus:outline-none focus:border-blue-500">
@@ -56,8 +61,7 @@
                         <i class="fa-solid fa-plus"></i> Tambah
                     </button>
                 </div>
-                <div id="variant-container" class="space-y-2">
-                    </div>
+                <div id="variant-container" class="space-y-2"></div>
                 <p class="text-xs text-gray-500 mt-2">*Kosongkan jika produk tidak memiliki varian.</p>
             </div>
 
@@ -70,14 +74,11 @@
     </div>
 
     <script>
-        // --- KONFIGURASI SUPABASE ---
         const SUPABASE_URL = 'https://qqyggahvwtysefbmpoqr.supabase.co'; 
-        const SUPABASE_KEY = 'sb_publishable_vQfgDnxOeq0F6hykqwUI_g_FxWZYRCP'; // PASTIKAN KEY BENAR
-
-        // PERBAIKAN: Ganti nama variabel jadi 'sb' dan gunakan 'supabase.createClient'
+        const SUPABASE_KEY = 'sb_publishable_vQfgDnxOeq0F6hykqwUI_g_FxWZYRCP'; 
         const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        // --- PREVIEW GAMBAR ---
+        // Preview Gambar
         document.getElementById('inp-file').addEventListener('change', function(e) {
             const file = e.target.files[0];
             if (file) {
@@ -91,82 +92,65 @@
             }
         });
 
-        // --- LOGIC VARIAN ---
         function addVariantInput() {
             const container = document.getElementById('variant-container');
             const div = document.createElement('div');
             div.className = 'flex gap-2';
             div.innerHTML = `
                 <input type="text" placeholder="Contoh: Merah XL" class="variant-input w-full bg-gray-900 border border-gray-600 rounded p-2 text-sm text-white">
-                <button type="button" onclick="this.parentElement.remove()" class="text-red-400 hover:text-red-300 px-2">
-                    <i class="fa-solid fa-trash"></i>
-                </button>
+                <button type="button" onclick="this.parentElement.remove()" class="text-red-400 hover:text-red-300 px-2"><i class="fa-solid fa-trash"></i></button>
             `;
             container.appendChild(div);
         }
 
-        // --- LOGIC SUBMIT ---
         document.getElementById('productForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             setLoading(true);
 
-            // 1. Ambil Nilai Form
+            // Ambil data termasuk KODE
+            const code = document.getElementById('inp-code').value; // <--- Data Baru
             const name = document.getElementById('inp-name').value;
             const price = document.getElementById('inp-price').value;
             const desc = document.getElementById('inp-desc').value;
             const defaultLink = document.getElementById('inp-link').value;
             const fileInput = document.getElementById('inp-file');
 
-            // 2. Proses Varian
             const variantInputs = document.querySelectorAll('.variant-input');
             let variants = [];
             variantInputs.forEach(inp => {
-                if(inp.value.trim() !== "") {
-                    variants.push({ name: inp.value.trim() });
-                }
+                if(inp.value.trim() !== "") variants.push({ name: inp.value.trim() });
             });
 
             try {
                 let imageUrl = "";
-
-                // 3. Upload Gambar (Jika ada)
                 if (fileInput.files.length > 0) {
                     const file = fileInput.files[0];
-                    
-                    // Sanitasi nama file biar tidak aneh-aneh
                     const fileExt = file.name.split('.').pop();
                     const fileName = `${Date.now()}.${fileExt}`; 
                     
-                    // Gunakan 'sb' bukan 'supabase'
-                    const { error: uploadError } = await sb.storage
-                        .from('product-images')
-                        .upload(fileName, file);
-
+                    const { error: uploadError } = await sb.storage.from('product-images').upload(fileName, file);
                     if (uploadError) throw uploadError;
 
-                    // Ambil Public URL
-                    const { data } = sb.storage
-                        .from('product-images')
-                        .getPublicUrl(fileName);
-                    
+                    const { data } = sb.storage.from('product-images').getPublicUrl(fileName);
                     imageUrl = data.publicUrl;
                 }
 
-                // 4. Simpan ke Database (Gunakan 'sb')
+                // Insert ke database dengan kolom product_code
                 const { error: insertError } = await sb
                     .from('products')
                     .insert({
+                        product_code: code, // <--- Kolom Baru
                         name: name,
                         price: price,
                         description: desc,
                         default_link: defaultLink,
                         image_url: imageUrl,
-                        variants: JSON.stringify(variants) // Pastikan simpan sbg string JSON
+                        variants: JSON.stringify(variants)
                     });
 
                 if (insertError) throw insertError;
 
-                alert('Berhasil! Produk telah ditambahkan.');
+                alert('Berhasil! Produk tersimpan.');
                 location.reload(); 
 
             } catch (err) {
