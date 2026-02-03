@@ -7,10 +7,15 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        /* Animasi Pop Up */
+        .modal-enter { animation: fadeIn 0.2s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+    </style>
 </head>
-<body class="bg-gray-100 min-h-screen pb-10">
+<body class="bg-gray-100 min-h-screen pb-10 font-sans">
 
-    <div class="bg-white shadow p-4 sticky top-0 z-50 mb-4">
+    <div class="bg-white shadow p-4 sticky top-0 z-40 mb-4">
         <div class="max-w-md mx-auto flex justify-between items-center">
             <h1 class="font-bold text-lg text-gray-800">Toko Online</h1>
             <button onclick="toggleLoginModal()" class="text-sm text-blue-600 font-semibold">
@@ -22,33 +27,79 @@
         </div>
     </div>
 
-    <div id="product-list" class="max-w-md mx-auto px-3 grid grid-cols-2 gap-3">
+    <div id="product-list" class="max-w-md mx-auto px-3 grid grid-cols-2 gap-3 pb-20">
         <div class="col-span-2 text-center mt-10 space-y-2">
             <i class="fa-solid fa-spinner fa-spin text-2xl text-gray-400"></i>
             <p class="text-gray-500">Memuat produk...</p>
         </div>
     </div>
 
+    <div id="detail-modal" class="fixed inset-0 bg-black bg-opacity-60 hidden z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
+        <div class="bg-white w-full max-w-sm sm:rounded-xl rounded-t-2xl shadow-2xl modal-enter flex flex-col max-h-[90vh]">
+            
+            <div class="p-4 border-b flex justify-between items-center bg-gray-50 rounded-t-2xl">
+                <h3 class="font-bold text-gray-800">Detail Pembelian</h3>
+                <button onclick="closeDetailModal()" class="text-gray-400 hover:text-gray-600 bg-gray-200 rounded-full w-8 h-8 flex items-center justify-center">
+                    <i class="fa-solid fa-times"></i>
+                </button>
+            </div>
+
+            <div class="p-5 overflow-y-auto">
+                <div class="flex gap-4 mb-6">
+                    <img id="modal-img" src="" class="w-20 h-20 rounded-lg object-cover bg-gray-100 border">
+                    <div>
+                        <span id="modal-code" class="text-[10px] font-bold bg-black text-white px-2 py-0.5 rounded">CODE</span>
+                        <h4 id="modal-name" class="font-bold text-gray-800 leading-tight mt-1 mb-1">Nama Produk</h4>
+                        <p id="modal-price" class="text-green-600 font-bold">Rp 0</p>
+                    </div>
+                </div>
+
+                <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4 relative overflow-hidden">
+                    <div class="absolute top-0 right-0 p-2 opacity-10">
+                        <i class="fa-solid fa-triangle-exclamation text-6xl text-yellow-500"></i>
+                    </div>
+                    
+                    <h5 class="text-yellow-800 font-bold text-sm mb-2 flex items-center gap-2">
+                        <i class="fa-solid fa-circle-info"></i> PENTING DIBACA!
+                    </h5>
+                    <p class="text-xs text-gray-700 leading-relaxed mb-3">
+                        Di TikTok Shop, <b>nama & foto produk mungkin disamarkan/sensor</b> agar tidak terkena pemblokiran (banned).
+                    </p>
+                    <div class="bg-white border border-yellow-300 rounded p-2 text-center shadow-sm">
+                        <p class="text-xs text-gray-500 mb-1">Pilih varian dengan kode:</p>
+                        <p id="modal-instruction-code" class="text-xl font-black text-red-600 tracking-wider">A-001</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="p-4 border-t bg-gray-50 rounded-b-xl">
+                <a id="modal-btn-link" href="#" target="_blank" class="flex items-center justify-center gap-2 w-full bg-black text-white py-3 rounded-lg font-bold hover:bg-gray-800 transition shadow-lg transform active:scale-95">
+                    <i class="fa-brands fa-tiktok"></i> Lanjut ke TikTok Shop
+                </a>
+            </div>
+        </div>
+    </div>
+
     <div id="login-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50 px-4">
-        <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-xs">
+        <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-xs modal-enter">
             <h3 class="font-bold text-lg mb-4">Login Affiliator</h3>
-            <input type="text" id="input-username" placeholder="Username" class="w-full border p-2 mb-2 rounded">
-            <input type="password" id="input-pin" placeholder="PIN" class="w-full border p-2 mb-4 rounded">
+            <input type="text" id="input-username" placeholder="Username" class="w-full border p-2 mb-2 rounded focus:outline-none focus:border-blue-500">
+            <input type="password" id="input-pin" placeholder="PIN" class="w-full border p-2 mb-4 rounded focus:outline-none focus:border-blue-500">
             <div class="flex justify-end gap-2">
                 <button onclick="toggleLoginModal()" class="px-4 py-2 text-gray-500">Batal</button>
-                <button onclick="handleLogin()" class="px-4 py-2 bg-blue-600 text-white rounded">Masuk</button>
+                <button onclick="handleLogin()" class="px-4 py-2 bg-blue-600 text-white rounded font-medium">Masuk</button>
             </div>
         </div>
     </div>
 
     <div id="edit-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50 px-4">
-        <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-xs">
-            <h3 class="font-bold text-lg mb-2">Edit Link</h3>
-            <p id="edit-product-name" class="text-sm text-gray-500 mb-4"></p>
-            <input type="text" id="input-custom-link" placeholder="Paste Link TikTok Affiliate" class="w-full border p-2 mb-4 rounded">
+        <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-xs modal-enter">
+            <h3 class="font-bold text-lg mb-2">Edit Link Affiliate</h3>
+            <p id="edit-product-name" class="text-sm text-gray-500 mb-4 line-clamp-1"></p>
+            <input type="text" id="input-custom-link" placeholder="Paste Link TikTok di sini..." class="w-full border p-2 mb-4 rounded focus:outline-none focus:border-blue-500">
             <div class="flex justify-end gap-2">
                 <button onclick="closeEditModal()" class="px-4 py-2 text-gray-500">Batal</button>
-                <button onclick="saveLink()" class="px-4 py-2 bg-green-600 text-white rounded">Simpan</button>
+                <button onclick="saveLink()" class="px-4 py-2 bg-green-600 text-white rounded font-medium">Simpan</button>
             </div>
         </div>
     </div>
@@ -58,6 +109,8 @@
         const SUPABASE_KEY = 'sb_publishable_vQfgDnxOeq0F6hykqwUI_g_FxWZYRCP'; 
         const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
+        let allProducts = []; // Menyimpan data produk global
+        let customLinksGlobal = []; // Menyimpan link affiliator global
         let currentAffiliator = null; 
         let shopOwner = null;         
         let activeProductForEdit = null; 
@@ -79,23 +132,22 @@
         async function loadProducts() {
             const container = document.getElementById('product-list');
             
+            // Ambil Produk
             let { data: products, error } = await sb
                 .from('products')
                 .select('*')
-                .order('id', { ascending: true });
+                .order('id', { ascending: false }); // Produk baru paling atas
 
-            if (error) {
-                console.error(error);
-                return;
-            }
+            if (error) { console.error(error); return; }
+            allProducts = products; // Simpan ke global var
 
-            let customLinks = [];
+            // Ambil Link Affiliator (Jika ada owner)
             if (shopOwner) {
                 const { data: links } = await sb
                     .from('affiliate_links')
                     .select('product_id, custom_link')
                     .eq('affiliator_username', shopOwner);
-                customLinks = links || [];
+                customLinksGlobal = links || [];
             }
 
             container.innerHTML = ''; 
@@ -106,47 +158,42 @@
             }
 
             products.forEach(prod => {
-                const linkData = customLinks.find(l => l.product_id === prod.id);
-                const finalLink = linkData ? linkData.custom_link : prod.default_link;
-
+                // Render Kartu Produk
+                
                 // Parse Varian
                 let variantHtml = '';
                 let variants = [];
-                if (typeof prod.variants === 'string') {
-                    try { variants = JSON.parse(prod.variants); } catch(e) {}
-                } else {
-                    variants = prod.variants || [];
-                }
+                try { variants = typeof prod.variants === 'string' ? JSON.parse(prod.variants) : (prod.variants || []); } catch(e){}
 
                 if(variants.length > 0) {
                     variantHtml = `
-                        <select class="w-full mt-2 p-1 border rounded text-xs bg-gray-50">
-                            <option>Pilih Varian</option>
-                            ${variants.map(v => `<option>${v.name}</option>`).join('')}
-                        </select>
+                        <div class="text-[10px] text-gray-500 mt-2 mb-1">Tersedia Varian:</div>
+                        <div class="flex flex-wrap gap-1">
+                            ${variants.slice(0, 2).map(v => `<span class="bg-gray-100 px-1.5 py-0.5 rounded text-[10px] border">${v.name}</span>`).join('')}
+                            ${variants.length > 2 ? `<span class="text-[10px] text-gray-400">+${variants.length - 2}</span>` : ''}
+                        </div>
                     `;
                 }
 
-                // --- TAMPILAN KARTU PRODUK 2 KOLOM ---
                 const card = document.createElement('div');
-                card.className = "bg-white rounded-lg shadow overflow-hidden relative flex flex-col h-full";
+                card.className = "bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden relative flex flex-col h-full";
                 
                 card.innerHTML = `
-                    <div class="relative w-full aspect-square">
-                        <img src="${prod.image_url || 'https://via.placeholder.com/300'}" class="w-full h-full object-cover">
+                    <div class="relative w-full aspect-square bg-gray-50">
+                        <img src="${prod.image_url || 'https://via.placeholder.com/300'}" class="w-full h-full object-cover" loading="lazy">
                         
                         <button onclick="openEditModal(${prod.id}, '${prod.name.replace(/'/g, "\\'")}')" 
-                            class="edit-btn hidden absolute top-1 right-1 bg-white text-black w-8 h-8 flex items-center justify-center rounded-full shadow hover:bg-yellow-100 z-10">
-                            <i class="fa-solid fa-pen text-sm"></i>
+                            class="edit-btn hidden absolute top-2 right-2 bg-white/90 text-black w-8 h-8 flex items-center justify-center rounded-full shadow hover:bg-yellow-100 z-10 backdrop-blur-sm border">
+                            <i class="fa-solid fa-pen text-xs"></i>
                         </button>
                     </div>
 
                     <div class="p-3 flex flex-col flex-grow">
-                        <span class="text-[10px] font-bold text-gray-400 bg-gray-100 px-1 rounded w-fit mb-1">
+                        <span class="text-[10px] font-bold text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded w-fit mb-1 border">
                             ${prod.product_code || '-'}
                         </span>
                         
-                        <h3 class="font-medium text-sm text-gray-800 line-clamp-2 leading-tight h-10 mb-1">
+                        <h3 class="font-medium text-sm text-gray-800 line-clamp-2 leading-tight min-h-[2.5em] mb-1">
                             ${prod.name}
                         </h3>
                         
@@ -155,10 +202,10 @@
                         ${variantHtml}
 
                         <div class="mt-auto pt-3">
-                            <a href="${finalLink || '#'}" target="_blank" 
-                               class="block w-full bg-black text-white text-xs text-center py-2 rounded font-semibold hover:bg-gray-800 transition">
-                               Beli
-                            </a>
+                            <button onclick="openDetailPopup(${prod.id})" 
+                               class="w-full bg-gray-900 text-white text-xs text-center py-2.5 rounded-md font-semibold hover:bg-black transition active:scale-95 flex justify-center items-center gap-2">
+                               <span>Beli Sekarang</span> <i class="fa-solid fa-chevron-right text-[10px]"></i>
+                            </button>
                         </div>
                     </div>
                 `;
@@ -168,7 +215,47 @@
             checkLoginState(); 
         }
 
-        // --- AUTH & EDIT LOGIC (SAMA SEPERTI SEBELUMNYA) ---
+        // --- POPUP DETAIL & EDUKASI LOGIC ---
+        function openDetailPopup(productId) {
+            // 1. Cari Data Produk
+            const prod = allProducts.find(p => p.id === productId);
+            if (!prod) return;
+
+            // 2. Cari Link (Apakah pakai link affiliator atau default)
+            const linkData = customLinksGlobal.find(l => l.product_id === productId);
+            const finalLink = linkData ? linkData.custom_link : prod.default_link;
+
+            // 3. Isi Modal
+            document.getElementById('modal-img').src = prod.image_url || 'https://via.placeholder.com/100';
+            document.getElementById('modal-code').innerText = prod.product_code || 'TANPA KODE';
+            document.getElementById('modal-name').innerText = prod.name;
+            document.getElementById('modal-price').innerText = 'Rp ' + prod.price.toLocaleString();
+            
+            // Isi Kode Instruksi (Penting!)
+            document.getElementById('modal-instruction-code').innerText = prod.product_code || '-';
+
+            // Set Link Tombol Akhir
+            const btnLink = document.getElementById('modal-btn-link');
+            btnLink.href = finalLink || '#';
+            
+            // Logika jika link kosong
+            if (!finalLink || finalLink === '#') {
+                btnLink.classList.add('opacity-50', 'pointer-events-none');
+                btnLink.innerText = "Link Belum Tersedia";
+            } else {
+                btnLink.classList.remove('opacity-50', 'pointer-events-none');
+                btnLink.innerHTML = '<i class="fa-brands fa-tiktok"></i> Lanjut ke TikTok Shop';
+            }
+
+            // 4. Tampilkan Modal
+            document.getElementById('detail-modal').classList.remove('hidden');
+        }
+
+        function closeDetailModal() {
+            document.getElementById('detail-modal').classList.add('hidden');
+        }
+
+        // --- SISTEM LOGIN & EDIT (TIDAK BERUBAH BANYAK) ---
         function toggleLoginModal() {
             document.getElementById('login-modal').classList.toggle('hidden');
         }
@@ -185,7 +272,7 @@
                 window.location.hash = `/${currentAffiliator}`;
                 location.reload(); 
             } else {
-                alert('Login Gagal');
+                alert('Username atau PIN salah!');
             }
         }
 
@@ -209,7 +296,7 @@
 
         async function saveLink() {
             const newLink = document.getElementById('input-custom-link').value;
-            if(!newLink) return alert('Kosong!');
+            if(!newLink) return alert('Link kosong!');
             const { error } = await sb.from('affiliate_links').upsert({ 
                 affiliator_username: currentAffiliator,
                 product_id: activeProductForEdit,
@@ -217,10 +304,22 @@
             }, { onConflict: 'affiliator_username, product_id' });
 
             if (!error) {
-                alert('Disimpan!');
+                alert('Link Tersimpan!');
                 closeEditModal();
                 location.reload(); 
+            } else {
+                alert('Gagal simpan');
             }
+        }
+
+        // Tutup modal jika klik di luar area
+        window.onclick = function(event) {
+            const m1 = document.getElementById('detail-modal');
+            const m2 = document.getElementById('login-modal');
+            const m3 = document.getElementById('edit-modal');
+            if (event.target == m1) m1.classList.add('hidden');
+            if (event.target == m2) m2.classList.add('hidden');
+            if (event.target == m3) m3.classList.add('hidden');
         }
     </script>
 </body>
