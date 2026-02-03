@@ -12,7 +12,7 @@
     <style>
         body { font-family: 'Plus Jakarta Sans', sans-serif; }
         
-        /* Glassmorphism Utilities */
+        /* Glassmorphism Styles */
         .glass {
             background: rgba(255, 255, 255, 0.05);
             backdrop-filter: blur(10px);
@@ -20,14 +20,16 @@
             border: 1px solid rgba(255, 255, 255, 0.1);
         }
         .glass-header {
-            background: rgba(6, 78, 59, 0.7);
+            background: rgba(6, 78, 59, 0.8); /* Hijau Emerald Gelap Transparan */
             backdrop-filter: blur(20px);
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         }
         
+        /* Animasi Modal */
         .modal-enter { animation: modalPop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
         @keyframes modalPop { from { opacity: 0; transform: scale(0.9) translateY(20px); } to { opacity: 1; transform: scale(1) translateY(0); } }
         
+        /* Custom Scrollbar */
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: #022c22; }
         ::-webkit-scrollbar-thumb { background: #065f46; border-radius: 10px; }
@@ -42,6 +44,7 @@
 
     <div class="glass-header sticky top-0 z-40 px-4 py-3 shadow-2xl shadow-emerald-900/20">
         <div class="max-w-md mx-auto flex justify-between items-center">
+            
             <div class="flex items-center gap-2">
                 <div class="w-8 h-8 bg-gradient-to-tr from-emerald-400 to-cyan-500 rounded-lg flex items-center justify-center text-black font-bold shadow-lg shadow-emerald-500/20">
                     <i class="fa-solid fa-store"></i>
@@ -51,14 +54,16 @@
             
             <div class="flex items-center gap-3">
                 
-                <button id="btn-login-trigger" onclick="toggleLoginModal()" class="w-8 h-8 flex items-center justify-center rounded-full text-white/10 hover:text-emerald-400 hover:bg-white/5 transition duration-300" title="Affiliator Login">
+                <button id="btn-login-trigger" onclick="toggleLoginModal()" class="w-8 h-8 flex items-center justify-center rounded-full text-white/30 hover:text-emerald-400 hover:bg-white/5 transition duration-300" title="Login Affiliator">
                     <i class="fa-solid fa-user-gear"></i>
                 </button>
 
                 <div id="affiliator-menu" class="hidden flex items-center gap-2">
-                    <button onclick="copyShopLink()" class="flex items-center gap-2 bg-emerald-600/20 text-emerald-400 border border-emerald-500/30 px-3 py-1.5 rounded-full text-xs hover:bg-emerald-600 hover:text-white transition">
+                    
+                    <button onclick="copyShopLink()" class="flex items-center gap-2 bg-emerald-500 text-white border border-emerald-400/50 px-3 py-1.5 rounded-full text-xs font-bold shadow-[0_0_10px_rgba(16,185,129,0.5)] hover:bg-emerald-400 transition transform active:scale-95">
                         <i class="fa-solid fa-share-nodes"></i> <span class="hidden sm:inline">Bagikan</span>
                     </button>
+
                     <button onclick="handleLogout()" class="w-8 h-8 flex items-center justify-center rounded-full bg-red-500/10 text-red-400 border border-red-500/20 hover:bg-red-500 hover:text-white transition" title="Keluar">
                         <i class="fa-solid fa-power-off text-xs"></i>
                     </button>
@@ -82,25 +87,25 @@
     </div>
 
     <div id="detail-modal" class="fixed inset-0 bg-black/90 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4">
-        <div class="bg-gray-900 w-full max-w-xs rounded-2xl border border-white/10 shadow-2xl shadow-emerald-900/50 modal-enter overflow-hidden relative">
+        <div class="bg-gray-900 w-full max-w-xs rounded-2xl border border-white/10 shadow-2xl shadow-emerald-900/50 modal-enter overflow-hidden relative flex flex-col max-h-[85vh]">
             
             <div class="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-1 bg-emerald-500 shadow-[0_0_20px_rgba(16,185,129,0.5)]"></div>
 
-            <div class="p-4 flex justify-between items-center border-b border-white/5">
+            <div class="p-4 flex justify-between items-center border-b border-white/5 bg-gray-900 sticky top-0 z-10">
                 <h3 class="font-bold text-white text-sm tracking-wide">DETAIL PRODUK</h3>
                 <button onclick="closeDetailModal()" class="text-gray-400 hover:text-white transition">
                     <i class="fa-solid fa-times text-lg"></i>
                 </button>
             </div>
 
-            <div class="p-5">
+            <div class="p-5 overflow-y-auto">
                 <div class="flex gap-4 mb-4">
-                    <img id="modal-img" src="" class="w-20 h-20 rounded-xl object-cover border border-white/10 shadow-lg">
+                    <img id="modal-img" src="" class="w-20 h-20 rounded-xl object-cover border border-white/10 shadow-lg shrink-0">
                     <div>
                         <span id="modal-code" class="text-[9px] font-bold bg-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded border border-emerald-500/30">CODE</span>
                         <h4 id="modal-name" class="font-bold text-white leading-tight mt-2 mb-1 text-sm">Nama Produk</h4>
                         
-                        <p id="modal-desc" class="text-[10px] text-gray-400 mb-2 line-clamp-2 leading-tight"></p>
+                        <p id="modal-desc" class="text-[10px] text-gray-400 mb-2 leading-relaxed break-words"></p>
                         
                         <p id="modal-price" class="text-emerald-400 font-bold text-lg">Rp 0</p>
                     </div>
@@ -108,20 +113,22 @@
 
                 <div class="bg-yellow-500/10 border border-yellow-500/20 rounded-xl p-4 mb-5 relative">
                     <div class="flex items-start gap-3">
-                        <i class="fa-solid fa-shield-halved text-yellow-500 text-xl mt-0.5"></i>
+                        <i class="fa-solid fa-shield-halved text-yellow-500 text-xl mt-0.5 shrink-0"></i>
                         <div>
                             <h5 class="text-yellow-500 font-bold text-xs mb-1 uppercase tracking-wider">Info Penting</h5>
                             <p class="text-[10px] text-gray-300 leading-relaxed">
-                                Demi keamanan akun, nama/foto produk di TikTok mungkin <b>disensor</b>.
+                                Demi keamanan, nama/foto produk di TikTok mungkin <b>disensor</b>.
                             </p>
                         </div>
                     </div>
                     <div class="mt-3 bg-black/40 rounded-lg p-2 text-center border border-white/5">
-                        <p class="text-[10px] text-gray-400 mb-1">Pastikan pilih varian kode:</p>
+                        <p class="text-[10px] text-gray-400 mb-1">Pilih varian kode:</p>
                         <p id="modal-instruction-code" class="text-xl font-black text-white tracking-widest drop-shadow-md">A-001</p>
                     </div>
                 </div>
+            </div>
 
+            <div class="p-4 border-t border-white/5 bg-gray-900 sticky bottom-0 z-10">
                 <a id="modal-btn-link" href="#" target="_blank" class="flex items-center justify-center gap-2 w-full bg-gradient-to-r from-emerald-600 to-emerald-500 text-white py-3.5 rounded-xl font-bold hover:shadow-[0_0_20px_rgba(16,185,129,0.4)] transition transform active:scale-95 text-sm">
                     <i class="fa-brands fa-tiktok"></i> Buka TikTok Shop
                 </a>
@@ -155,26 +162,30 @@
         </div>
     </div>
 
-    <div id="toast" class="fixed top-20 left-1/2 transform -translate-x-1/2 bg-emerald-600 text-white px-4 py-2 rounded-full shadow-xl transition-opacity duration-300 opacity-0 pointer-events-none z-50 text-xs font-bold flex items-center gap-2">
-        <i class="fa-solid fa-check-circle"></i> Link Toko Disalin!
+    <div id="toast" class="fixed top-24 left-1/2 transform -translate-x-1/2 bg-emerald-500 text-white px-5 py-3 rounded-full shadow-2xl transition-all duration-300 opacity-0 translate-y-[-20px] pointer-events-none z-[100] text-xs font-bold flex items-center gap-2 border border-emerald-400">
+        <i class="fa-solid fa-check-circle text-lg"></i> <span>Link Toko Disalin!</span>
     </div>
 
     <script>
+        // Konfigurasi Supabase
         const SUPABASE_URL = 'https://qqyggahvwtysefbmpoqr.supabase.co'; 
         const SUPABASE_KEY = 'sb_publishable_vQfgDnxOeq0F6hykqwUI_g_FxWZYRCP'; 
         const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
+        // Global Variables
         let allProducts = [];
         let customLinksGlobal = [];
         let currentAffiliator = null; 
         let shopOwner = null;         
         let activeProductForEdit = null; 
 
+        // Saat Halaman Dimuat
         window.addEventListener('load', async () => {
             checkUrlHash();     
             await loadProducts(); 
         });
 
+        // Cek URL (apakah ada nama affiliator di link?)
         function checkUrlHash() {
             const hash = window.location.hash; 
             if (hash && hash.startsWith('#/')) {
@@ -184,6 +195,7 @@
             }
         }
 
+        // Ambil Produk dari Database
         async function loadProducts() {
             const container = document.getElementById('product-list');
             
@@ -272,6 +284,7 @@
             checkLoginState(); 
         }
 
+        // --- FUNGSI POPUP DETAIL (UPDATED) ---
         function openDetailPopup(productId) {
             const prod = allProducts.find(p => p.id === productId);
             if (!prod) return;
@@ -282,7 +295,10 @@
             document.getElementById('modal-img').src = prod.image_url || 'https://via.placeholder.com/100';
             document.getElementById('modal-code').innerText = prod.product_code || 'TANPA KODE';
             document.getElementById('modal-name').innerText = prod.name;
-            document.getElementById('modal-desc').innerText = prod.description || ''; // Isi deskripsi di popup
+            
+            // ISI DESKRIPSI LENGKAP KE POPUP
+            document.getElementById('modal-desc').innerText = prod.description || 'Tidak ada deskripsi detail.';
+            
             document.getElementById('modal-price').innerText = 'Rp ' + prod.price.toLocaleString();
             document.getElementById('modal-instruction-code').innerText = prod.product_code || '-';
 
@@ -304,7 +320,7 @@
             document.getElementById('detail-modal').classList.add('hidden');
         }
 
-        // --- AUTH & SHARE LOGIC ---
+        // --- SISTEM LOGIN ---
         function toggleLoginModal() {
             document.getElementById('login-modal').classList.toggle('hidden');
         }
@@ -321,57 +337,20 @@
                 window.location.hash = `/${currentAffiliator}`;
                 location.reload(); 
             } else {
-                alert('Akses Ditolak');
+                alert('Username atau PIN salah!');
             }
         }
 
-        // FUNGSI LOGOUT (BARU)
         function handleLogout() {
             if(confirm('Yakin ingin keluar?')) {
                 localStorage.removeItem('affiliator_user');
                 currentAffiliator = null;
-                window.location.hash = ''; // Hapus hash
+                window.location.hash = ''; 
                 location.reload();
             }
         }
 
-        // FUNGSI SHARE LINK (BARU)
-        async function copyShopLink() {
-            if (!currentAffiliator) return alert('Silakan login dulu.');
-            
-            // Buat URL lengkap (contoh: https://web.com/#/budi)
-            const fullUrl = window.location.origin + window.location.pathname + '#/' + currentAffiliator;
-
-            // Jika di HP, pakai fitur Share native
-            if (navigator.share) {
-                try {
-                    await navigator.share({
-                        title: 'Katalog ' + currentAffiliator,
-                        text: 'Cek koleksi produk tembakau & papir murah di sini:',
-                        url: fullUrl
-                    });
-                } catch (err) {
-                    console.log('Share dibatalkan');
-                }
-            } else {
-                // Jika di PC, copy ke clipboard
-                try {
-                    await navigator.clipboard.writeText(fullUrl);
-                    showToast();
-                } catch (err) {
-                    alert('Gagal copy link: ' + fullUrl);
-                }
-            }
-        }
-
-        function showToast() {
-            const toast = document.getElementById('toast');
-            toast.classList.remove('opacity-0');
-            setTimeout(() => {
-                toast.classList.add('opacity-0');
-            }, 2000);
-        }
-
+        // --- SISTEM CEK STATUS LOGIN ---
         function checkLoginState() {
             const savedUser = localStorage.getItem('affiliator_user');
             
@@ -380,19 +359,19 @@
 
             if (savedUser) {
                 currentAffiliator = savedUser;
-                // Sembunyikan tombol login, tampilkan menu share & logout
+                // Sembunyikan tombol login, tampilkan menu affiliator (Share & Logout)
                 btnLogin.classList.add('hidden');
                 menuAffiliator.classList.remove('hidden');
                 
-                // Tampilkan tombol edit
+                // Munculkan tombol edit di produk
                 document.querySelectorAll('.edit-btn').forEach(el => el.classList.remove('hidden'));
             } else {
-                // Tampilkan tombol login, sembunyikan menu
                 btnLogin.classList.remove('hidden');
                 menuAffiliator.classList.add('hidden');
             }
         }
 
+        // --- SISTEM EDIT LINK ---
         function openEditModal(prodId, prodName) {
             activeProductForEdit = prodId;
             document.getElementById('edit-product-name').innerText = prodName;
@@ -413,12 +392,49 @@
             }, { onConflict: 'affiliator_username, product_id' });
 
             if (!error) {
-                alert('Tersimpan!');
+                alert('Link Tersimpan!');
                 closeEditModal();
                 location.reload(); 
             }
         }
 
+        // --- SISTEM SHARE LINK ---
+        async function copyShopLink() {
+            if (!currentAffiliator) return alert('Silakan login dulu.');
+            
+            const fullUrl = window.location.origin + window.location.pathname + '#/' + currentAffiliator;
+
+            // Jika di HP (Mobile Native Share)
+            if (navigator.share) {
+                try {
+                    await navigator.share({
+                        title: 'Katalog ' + currentAffiliator,
+                        text: 'Cek koleksi produk tembakau & papir murah di sini:',
+                        url: fullUrl
+                    });
+                } catch (err) {
+                    console.log('Share dibatalkan');
+                }
+            } else {
+                // Jika di PC (Clipboard)
+                try {
+                    await navigator.clipboard.writeText(fullUrl);
+                    showToast();
+                } catch (err) {
+                    alert('Gagal copy link: ' + fullUrl);
+                }
+            }
+        }
+
+        function showToast() {
+            const toast = document.getElementById('toast');
+            toast.classList.remove('opacity-0', 'translate-y-[-20px]');
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-y-[-20px]');
+            }, 2000);
+        }
+
+        // Tutup modal jika klik di luar
         window.onclick = function(event) {
             const m1 = document.getElementById('detail-modal');
             const m2 = document.getElementById('login-modal');
