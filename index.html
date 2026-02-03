@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sobat Mbahmo</title>
+    <title>Katalog Eksklusif</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
@@ -46,16 +46,31 @@
                 <div class="w-8 h-8 bg-gradient-to-tr from-emerald-400 to-cyan-500 rounded-lg flex items-center justify-center text-black font-bold shadow-lg shadow-emerald-500/20">
                     <i class="fa-solid fa-store"></i>
                 </div>
-                <h1 class="font-bold text-lg text-white tracking-wide">Jamaah<span class="text-emerald-400">Lintingiyah</span></h1>
+                <h1 class="font-bold text-lg text-white tracking-wide">Toko<span class="text-emerald-400">Online</span></h1>
             </div>
             
-            <button onclick="toggleLoginModal()" class="w-8 h-8 flex items-center justify-center rounded-full text-white/10 hover:text-emerald-400 hover:bg-white/5 transition duration-300" title="Affiliator Login">
-                <i class="fa-solid fa-user-gear"></i>
-            </button>
-            
+            <div class="flex items-center gap-3">
+                
+                <button id="btn-login-trigger" onclick="toggleLoginModal()" class="w-8 h-8 flex items-center justify-center rounded-full text-white/10 hover:text-emerald-400 hover:bg-white/5 transition duration-300" title="Affiliator Login">
+                    <i class="fa-solid fa-user-gear"></i>
+                </button>
+
+                <div id="affiliator-menu" class="hidden flex items-center gap-2">
+                    <button onclick="copyShopLink()" class="flex items-center gap-2 bg-emerald-600/20 text-emerald-400 border border-emerald-500/30 px-3 py-1.5 rounded-full text-xs hover:bg-emerald-600 hover:text-white transition">
+                        <i class="fa-solid fa-share-nodes"></i> <span class="hidden sm:inline">Bagikan</span>
+                    </button>
+                    <button onclick="handleLogout()" class="w-8 h-8 flex items-center justify-center rounded-full bg-red-500/10 text-red-400 border border-red-500/20 hover:bg-red-500 hover:text-white transition" title="Keluar">
+                        <i class="fa-solid fa-power-off text-xs"></i>
+                    </button>
+                </div>
+
+            </div>
         </div>
-        <div id="shop-info" class="max-w-md mx-auto text-[10px] text-emerald-400 mt-1 hidden text-center tracking-widest uppercase">
-            Store ID: <span id="shop-owner" class="font-bold text-white"></span>
+        
+        <div id="shop-info" class="max-w-md mx-auto mt-2 hidden">
+            <div class="flex justify-center items-center gap-2 text-[10px] tracking-widest uppercase text-emerald-500/70 bg-black/20 p-1 rounded-lg border border-white/5 mx-auto w-fit px-3">
+                <i class="fa-solid fa-shop"></i> Store: <span id="shop-owner" class="font-bold text-emerald-400"></span>
+            </div>
         </div>
     </div>
 
@@ -79,11 +94,14 @@
             </div>
 
             <div class="p-5">
-                <div class="flex gap-4 mb-6">
+                <div class="flex gap-4 mb-4">
                     <img id="modal-img" src="" class="w-20 h-20 rounded-xl object-cover border border-white/10 shadow-lg">
                     <div>
                         <span id="modal-code" class="text-[9px] font-bold bg-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded border border-emerald-500/30">CODE</span>
                         <h4 id="modal-name" class="font-bold text-white leading-tight mt-2 mb-1 text-sm">Nama Produk</h4>
+                        
+                        <p id="modal-desc" class="text-[10px] text-gray-400 mb-2 line-clamp-2 leading-tight"></p>
+                        
                         <p id="modal-price" class="text-emerald-400 font-bold text-lg">Rp 0</p>
                     </div>
                 </div>
@@ -94,7 +112,7 @@
                         <div>
                             <h5 class="text-yellow-500 font-bold text-xs mb-1 uppercase tracking-wider">Info Penting</h5>
                             <p class="text-[10px] text-gray-300 leading-relaxed">
-                                Demi keamanan akun toko, nama/foto produk di TikTok <b>disensor</b> Demi kelancaran Transaksi kita bersama.
+                                Demi keamanan akun, nama/foto produk di TikTok mungkin <b>disensor</b>.
                             </p>
                         </div>
                     </div>
@@ -135,6 +153,10 @@
                 <button onclick="saveLink()" class="px-4 py-2 bg-emerald-600 text-white rounded-lg text-sm hover:bg-emerald-500">Simpan</button>
             </div>
         </div>
+    </div>
+
+    <div id="toast" class="fixed top-20 left-1/2 transform -translate-x-1/2 bg-emerald-600 text-white px-4 py-2 rounded-full shadow-xl transition-opacity duration-300 opacity-0 pointer-events-none z-50 text-xs font-bold flex items-center gap-2">
+        <i class="fa-solid fa-check-circle"></i> Link Toko Disalin!
     </div>
 
     <script>
@@ -229,6 +251,10 @@
                         </h3>
                         
                         <p class="text-emerald-400 font-bold text-sm drop-shadow-sm">Rp ${prod.price.toLocaleString()}</p>
+
+                        <p class="text-[10px] text-gray-400 mt-2 line-clamp-2 leading-tight">
+                            ${prod.description || 'Tidak ada deskripsi.'}
+                        </p>
                         
                         ${variantHtml}
 
@@ -256,6 +282,7 @@
             document.getElementById('modal-img').src = prod.image_url || 'https://via.placeholder.com/100';
             document.getElementById('modal-code').innerText = prod.product_code || 'TANPA KODE';
             document.getElementById('modal-name').innerText = prod.name;
+            document.getElementById('modal-desc').innerText = prod.description || ''; // Isi deskripsi di popup
             document.getElementById('modal-price').innerText = 'Rp ' + prod.price.toLocaleString();
             document.getElementById('modal-instruction-code').innerText = prod.product_code || '-';
 
@@ -277,6 +304,7 @@
             document.getElementById('detail-modal').classList.add('hidden');
         }
 
+        // --- AUTH & SHARE LOGIC ---
         function toggleLoginModal() {
             document.getElementById('login-modal').classList.toggle('hidden');
         }
@@ -297,11 +325,71 @@
             }
         }
 
+        // FUNGSI LOGOUT (BARU)
+        function handleLogout() {
+            if(confirm('Yakin ingin keluar?')) {
+                localStorage.removeItem('affiliator_user');
+                currentAffiliator = null;
+                window.location.hash = ''; // Hapus hash
+                location.reload();
+            }
+        }
+
+        // FUNGSI SHARE LINK (BARU)
+        async function copyShopLink() {
+            if (!currentAffiliator) return alert('Silakan login dulu.');
+            
+            // Buat URL lengkap (contoh: https://web.com/#/budi)
+            const fullUrl = window.location.origin + window.location.pathname + '#/' + currentAffiliator;
+
+            // Jika di HP, pakai fitur Share native
+            if (navigator.share) {
+                try {
+                    await navigator.share({
+                        title: 'Katalog ' + currentAffiliator,
+                        text: 'Cek koleksi produk tembakau & papir murah di sini:',
+                        url: fullUrl
+                    });
+                } catch (err) {
+                    console.log('Share dibatalkan');
+                }
+            } else {
+                // Jika di PC, copy ke clipboard
+                try {
+                    await navigator.clipboard.writeText(fullUrl);
+                    showToast();
+                } catch (err) {
+                    alert('Gagal copy link: ' + fullUrl);
+                }
+            }
+        }
+
+        function showToast() {
+            const toast = document.getElementById('toast');
+            toast.classList.remove('opacity-0');
+            setTimeout(() => {
+                toast.classList.add('opacity-0');
+            }, 2000);
+        }
+
         function checkLoginState() {
             const savedUser = localStorage.getItem('affiliator_user');
+            
+            const btnLogin = document.getElementById('btn-login-trigger');
+            const menuAffiliator = document.getElementById('affiliator-menu');
+
             if (savedUser) {
                 currentAffiliator = savedUser;
+                // Sembunyikan tombol login, tampilkan menu share & logout
+                btnLogin.classList.add('hidden');
+                menuAffiliator.classList.remove('hidden');
+                
+                // Tampilkan tombol edit
                 document.querySelectorAll('.edit-btn').forEach(el => el.classList.remove('hidden'));
+            } else {
+                // Tampilkan tombol login, sembunyikan menu
+                btnLogin.classList.remove('hidden');
+                menuAffiliator.classList.add('hidden');
             }
         }
 
