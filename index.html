@@ -22,20 +22,14 @@
         }
         .hidden { display: none !important; }
         
+        /* Glass Effect */
         .glass { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); }
         .glass-header { background: rgba(6, 78, 59, 0.95); backdrop-filter: blur(10px); border-bottom: 1px solid rgba(255, 255, 255, 0.1); position: sticky; top: 0; z-index: 50; }
         
-        /* HILANGKAN PANAH INPUT NUMBER (SPINNER) */
-        /* Chrome, Safari, Edge, Opera */
+        /* Hilangkan Panah Input Number (Spinner) agar bersih */
         input[type=number]::-webkit-outer-spin-button,
-        input[type=number]::-webkit-inner-spin-button {
-            -webkit-appearance: none;
-            margin: 0;
-        }
-        /* Firefox */
-        input[type=number] {
-            -moz-appearance: textfield;
-        }
+        input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+        input[type=number] { -moz-appearance: textfield; }
 
         input[type="file"]::file-selector-button {
             border-radius: 4px; padding: 0 10px; height: 30px; cursor: pointer;
@@ -258,19 +252,16 @@
     </div>
 
     <script>
-        // CONFIG SUPABASE
         const SUPABASE_URL = 'https://qqyggahvwtysefbmpoqr.supabase.co'; 
         const SUPABASE_KEY = 'sb_publishable_vQfgDnxOeq0F6hykqwUI_g_FxWZYRCP'; 
         const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        // STATE
         let currentUser = null; 
         let allProducts = [];
         let isEditingId = null; 
         let existingImageUrl = "";
         let activeProductForLink = null; 
 
-        // INIT
         window.addEventListener('load', async () => {
             checkLoginSession(); 
             await loadData();    
@@ -404,14 +395,14 @@
             }
         }
 
+        // FUNGSI LOAD ADMIN DATA (DIPERBAIKI)
         async function loadAdminData() {
             const container = document.getElementById('admin-product-list');
             
-            // UBAH LAYOUT JADI GRID 3 KOLOM (Mobile 2 kolom, Desktop 3 kolom)
+            // Grid 3 Kolom
             container.className = "grid grid-cols-2 md:grid-cols-3 gap-3 pb-24";
             
             let { data: products } = await sb.from('products').select('*').order('sort_order', { ascending: true });
-            
             container.innerHTML = '';
             
             if (!products || products.length === 0) {
@@ -421,16 +412,15 @@
 
             products.forEach(prod => {
                 const item = document.createElement('div');
-                // STYLE KARTU ADMIN (Grid Item)
                 item.className = "glass bg-gray-800/80 rounded-xl p-3 relative group border border-white/5 hover:border-emerald-500/50 transition flex flex-col items-center text-center";
                 
                 item.innerHTML = `
                     <div class="absolute top-2 left-2 z-10 shadow-lg">
                         <input type="number" 
-                            id="sort-${prod.id}"
                             value="${prod.sort_order || 999}" 
-                            class="scrub-input w-10 bg-black/80 border border-emerald-500/50 text-center text-emerald-400 text-xs font-bold rounded p-1 focus:outline-none"
-                            title="Geser mouse naik/turun">
+                            onchange="quickSort(${prod.id}, this.value)"
+                            class="w-10 bg-black/80 border border-emerald-500/50 text-center text-emerald-400 text-xs font-bold rounded p-1 focus:outline-none"
+                            title="Nomor Urut">
                     </div>
 
                     <div class="absolute top-2 right-2 z-10 flex gap-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
@@ -451,10 +441,6 @@
                     </div>
                 `;
                 container.appendChild(item);
-                
-                // Aktifkan fitur geser angka
-                const inputEl = item.querySelector(`#sort-${prod.id}`);
-                initDragInput(inputEl, prod.id);
             });
         }
 
@@ -506,7 +492,7 @@
                 name: document.getElementById('inp-name').value,
                 price: document.getElementById('inp-price').value,
                 description: document.getElementById('inp-desc').value,
-                default_link: document.getElementById('inp-link').value, // <--- KOLOM LINK DITAMBAHKAN
+                default_link: document.getElementById('inp-link').value, 
             };
 
             const fileInput = document.getElementById('inp-file');
@@ -548,7 +534,7 @@
             document.getElementById('inp-name').value = prod.name;
             document.getElementById('inp-price').value = prod.price;
             document.getElementById('inp-desc').value = prod.description;
-            document.getElementById('inp-link').value = prod.default_link || ''; // <--- EDIT LINK
+            document.getElementById('inp-link').value = prod.default_link || ''; 
             
             if(prod.image_url) {
                 document.getElementById('preview-img').src = prod.image_url;
@@ -580,7 +566,10 @@
             if(confirm('Hapus produk?')) { await sb.from('products').delete().eq('id', id); loadAdminData(); }
         }
         
-        async function quickSort(id, val) { await sb.from('products').update({sort_order: val}).eq('id', id); }
+        async function quickSort(id, val) { 
+            await sb.from('products').update({sort_order: val}).eq('id', id);
+            showToast('Urutan Disimpan');
+        }
 
         function addVariantInput(value = '') {
             const container = document.getElementById('variant-container');
