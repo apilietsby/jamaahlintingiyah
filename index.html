@@ -25,6 +25,18 @@
         .glass { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); }
         .glass-header { background: rgba(6, 78, 59, 0.95); backdrop-filter: blur(10px); border-bottom: 1px solid rgba(255, 255, 255, 0.1); position: sticky; top: 0; z-index: 50; }
         
+        /* HILANGKAN PANAH INPUT NUMBER (SPINNER) */
+        /* Chrome, Safari, Edge, Opera */
+        input[type=number]::-webkit-outer-spin-button,
+        input[type=number]::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        /* Firefox */
+        input[type=number] {
+            -moz-appearance: textfield;
+        }
+
         input[type="file"]::file-selector-button {
             border-radius: 4px; padding: 0 10px; height: 30px; cursor: pointer;
             background-color: #374151; border: 1px solid rgba(255,255,255,0.1); color: white; margin-right: 10px;
@@ -327,37 +339,28 @@
             if (saved) { currentUser = JSON.parse(saved); updateUI(); }
         }
 
-        async function loadAdminData() {
-            const container = document.getElementById('admin-product-list');
+        async function loadData() {
+            const container = document.getElementById('view-catalog');
             let { data: products } = await sb.from('products').select('*').order('sort_order', { ascending: true });
+            allProducts = products || [];
             
-            container.innerHTML = '';
-            products.forEach(prod => {
-                const item = document.createElement('div');
-                item.className = "flex items-center gap-3 bg-black/40 p-2 rounded-lg border border-white/5";
-                
-                // PERBAIKAN ADA DI SINI (w-8 diganti jadi w-14)
-                item.innerHTML = `
-                    <div class="flex flex-col items-center">
-                        <label class="text-[8px] text-gray-500 mb-0.5">Urut</label>
-                        <input type="number" value="${prod.sort_order || 999}" 
-                            onchange="quickSort(${prod.id}, this.value)" 
-                            class="w-14 bg-gray-800 border border-gray-600 text-center text-white text-xs rounded p-1">
-                    </div>
+            let customLinks = [];
+            let owner = null;
+            if (currentUser && currentUser.role !== 'admin') { owner = currentUser.username; } 
+            else if (window.location.hash.startsWith('#/')) { owner = window.location.hash.replace('#/', ''); }
 
-                    <img src="${prod.image_url || 'https://via.placeholder.com/50'}" class="w-10 h-10 rounded-md object-cover border border-white/10">
-                    <div class="flex-1 min-w-0">
-                        <div class="text-xs font-bold text-white truncate">${prod.name}</div>
-                        <div class="text-[10px] text-gray-400 font-mono">${prod.product_code} | Rp ${prod.price.toLocaleString()}</div>
-                    </div>
-                    <div class="flex gap-2">
-                        <button onclick='editProduct(${JSON.stringify(prod)})' class="bg-blue-600/20 text-blue-400 border border-blue-500/30 w-7 h-7 rounded flex items-center justify-center text-xs"><i class="fa-solid fa-pen"></i></button>
-                        <button onclick="deleteProduct(${prod.id})" class="bg-red-600/20 text-red-400 border border-red-500/30 w-7 h-7 rounded flex items-center justify-center text-xs"><i class="fa-solid fa-trash"></i></button>
-                    </div>
-                `;
-                container.appendChild(item);
-            });
-        }
+            if (owner) {
+                const { data } = await sb.from('affiliate_links').select('*').eq('affiliator_username', owner);
+                customLinks = data || [];
+                document.getElementById('shop-info').classList.remove('hidden');
+                document.getElementById('shop-owner').innerText = owner;
+            }
+
+            container.innerHTML = '';
+            if (allProducts.length === 0) {
+                container.innerHTML = '<div class="col-span-2 text-center text-gray-500 mt-10 p-4 glass rounded-xl">Belum ada produk.</div>';
+                return;
+            }
 
             allProducts.forEach(prod => {
                 const linkData = customLinks.find(l => l.product_id === prod.id);
@@ -411,7 +414,7 @@
                 item.innerHTML = `
                     <div class="flex flex-col items-center">
                         <label class="text-[8px] text-gray-500 mb-0.5">Urut</label>
-                        <input type="number" value="${prod.sort_order || 999}" onchange="quickSort(${prod.id}, this.value)" class="w-8 bg-gray-800 border border-gray-600 text-center text-white text-xs rounded p-1">
+                        <input type="number" value="${prod.sort_order || 999}" onchange="quickSort(${prod.id}, this.value)" class="w-14 bg-gray-800 border border-gray-600 text-center text-white text-xs rounded p-1">
                     </div>
                     <img src="${prod.image_url || 'https://via.placeholder.com/50'}" class="w-10 h-10 rounded-md object-cover border border-white/10">
                     <div class="flex-1 min-w-0">
