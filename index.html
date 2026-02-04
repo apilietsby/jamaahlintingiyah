@@ -12,11 +12,11 @@
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
 
     <style>
-        /* LAYOUT CORE */
+        /* CORE LAYOUT */
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #020617; color: #e2e8f0; margin: 0; padding: 0; height: 100vh; height: 100dvh; overflow: hidden; display: flex; flex-direction: column; }
         
-        /* HEADER & UTILS */
+        /* HEADER */
         .glass-header { flex: none; background: rgba(6, 78, 59, 0.98); backdrop-filter: blur(10px); border-bottom: 1px solid rgba(255, 255, 255, 0.1); z-index: 50; }
         .hidden { display: none !important; }
         .glass { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); }
@@ -29,129 +29,114 @@
         input[type=number] { -moz-appearance: textfield; } input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
         input[type="file"]::file-selector-button { border-radius: 4px; padding: 0 10px; height: 30px; background-color: #374151; border: 1px solid rgba(255,255,255,0.1); color: white; margin-right: 10px; }
 
-        /* TAB ACTIVE STATES */
+        /* SELECTION STYLES */
+        .card-selected { border: 2px solid #fbbf24 !important; background-color: rgba(251, 191, 36, 0.15) !important; transform: scale(0.95); transition: all 0.2s; }
+        .select-indicator { width: 20px; height: 20px; border-radius: 4px; background: rgba(0,0,0,0.5); border: 1px solid white; display: flex; align-items: center; justify-content: center; font-size: 10px; }
+        .card-selected .select-indicator { background: #fbbf24; border-color: #fbbf24; }
+
+        /* TABS */
         .tab-active { background-color: #059669; color: white; border-bottom: 3px solid #34d399; }
         .tab-inactive { background-color: #1f2937; color: #9ca3af; }
-        .tab-bulk { background-color: #ca8a04; color: white; border-bottom: 3px solid #facc15; } /* Kuning utk Bulk */
-
-        /* SELECTION CARD STYLE */
-        .card-selected { border: 2px solid #fbbf24 !important; background-color: rgba(251, 191, 36, 0.15) !important; transform: scale(0.98); transition: all 0.2s; }
-        .select-indicator { width: 24px; height: 24px; border-radius: 6px; background: rgba(0,0,0,0.5); border: 2px solid white; display: flex; align-items: center; justify-content: center; }
-        .card-selected .select-indicator { background: #fbbf24; border-color: #fbbf24; }
+        .tab-bulk { background-color: #ca8a04; color: white; border-bottom: 3px solid #facc15; }
     </style>
 </head>
 <body>
 
-    <div class="glass-header px-4 py-3 shadow-2xl flex-none">
-        <div class="max-w-6xl mx-auto flex justify-between items-center">
+    <div class="glass-header px-3 py-2 shadow-2xl flex-none">
+        <div class="max-w-7xl mx-auto flex justify-between items-center">
             <div class="flex items-center gap-2 cursor-pointer" onclick="window.location.reload()">
-                <div class="w-9 h-9 bg-gradient-to-tr from-emerald-500 to-green-400 rounded-lg flex items-center justify-center text-white font-bold shadow-lg"><i class="fa-solid fa-leaf"></i></div>
-                <div><h1 class="font-bold text-lg text-white leading-tight tracking-wider">TOKO<span class="text-emerald-300">NEMBAHMO</span></h1></div>
+                <div class="w-8 h-8 bg-gradient-to-tr from-emerald-500 to-green-400 rounded-lg flex items-center justify-center text-white font-bold shadow-lg"><i class="fa-solid fa-leaf text-sm"></i></div>
+                <div>
+                    <h1 class="font-bold text-base text-white leading-tight tracking-wider">TOKONE<span class="text-emerald-400">MBAHMO</span></h1>
+                </div>
             </div>
             
-            <div class="flex items-center gap-3">
-                <button id="btn-login-trigger" onclick="toggleLoginModal()" class="w-9 h-9 flex items-center justify-center rounded-full bg-white/10 text-white hover:bg-emerald-500 transition border border-white/10"><i class="fa-solid fa-right-to-bracket text-sm"></i></button>
+            <div class="flex items-center gap-2">
+                <button id="btn-login-trigger" onclick="toggleLoginModal()" class="w-8 h-8 flex items-center justify-center rounded-full bg-white/10 text-white hover:bg-emerald-500 transition border border-white/10"><i class="fa-solid fa-right-to-bracket text-xs"></i></button>
                 
                 <div id="user-menu" class="hidden flex items-center gap-2">
-                    <span id="user-role-badge" class="text-[10px] uppercase font-bold px-2 py-1 rounded bg-gray-800 text-gray-300 border border-gray-600">USER</span>
-                    
-                    <button id="btn-user-mode" onclick="toggleUserMode()" class="hidden flex items-center gap-2 bg-gray-700 text-white border border-gray-600 px-3 py-1.5 rounded-full text-xs font-bold shadow transition active:scale-95">
-                        <i class="fa-solid fa-list-check"></i> <span class="hidden sm:inline">Pilih Banyak</span>
-                    </button>
-
-                    <button id="btn-share" onclick="copyShopLink()" class="hidden flex items-center gap-2 bg-emerald-500 text-white border border-emerald-400/50 px-3 py-1.5 rounded-full text-xs font-bold shadow hover:bg-emerald-400 transition active:scale-95"><i class="fa-solid fa-share-nodes"></i> <span class="hidden sm:inline">Share</span></button>
-                    <button onclick="handleLogout()" class="w-8 h-8 flex items-center justify-center rounded-full bg-red-500/20 text-red-400 border border-red-500/30 hover:bg-red-500 hover:text-white transition"><i class="fa-solid fa-power-off text-xs"></i></button>
+                    <span id="user-role-badge" class="text-[9px] uppercase font-bold px-2 py-0.5 rounded bg-gray-800 text-gray-300 border border-gray-600">USER</span>
+                    <button id="btn-user-mode" onclick="toggleUserMode()" class="hidden flex items-center gap-1 bg-gray-700 text-white border border-gray-600 px-2 py-1 rounded text-[10px] font-bold shadow transition active:scale-95"><i class="fa-solid fa-list-check"></i> <span>Pilih</span></button>
+                    <button id="btn-share" onclick="copyShopLink()" class="hidden flex items-center gap-1 bg-emerald-500 text-white border border-emerald-400/50 px-2 py-1 rounded text-[10px] font-bold shadow hover:bg-emerald-400 transition active:scale-95"><i class="fa-solid fa-share-nodes"></i> <span>Share</span></button>
+                    <button onclick="handleLogout()" class="w-7 h-7 flex items-center justify-center rounded-full bg-red-500/20 text-red-400 border border-red-500/30 hover:bg-red-500 hover:text-white transition"><i class="fa-solid fa-power-off text-[10px]"></i></button>
                 </div>
             </div>
         </div>
-        <div id="shop-info" class="max-w-md mx-auto mt-2 hidden text-center"><span class="text-[10px] uppercase text-emerald-300 bg-black/50 px-3 py-1 rounded-full border border-emerald-500/30">Store: <span id="shop-owner" class="font-bold text-white"></span></span></div>
+        <div id="shop-info" class="max-w-md mx-auto mt-1 hidden text-center"><span class="text-[9px] uppercase text-emerald-300 bg-black/50 px-2 py-0.5 rounded border border-emerald-500/30">Store: <span id="shop-owner" class="font-bold text-white"></span></span></div>
     </div>
 
     <div id="main-content">
         
-        <div id="view-catalog" class="p-4">
-            <div id="user-bulk-notice" class="hidden max-w-md mx-auto mb-4 bg-yellow-600/20 border border-yellow-500/50 p-3 rounded-lg flex items-center justify-between">
-                <div class="text-xs text-yellow-200"><i class="fa-solid fa-info-circle mr-1"></i> Klik produk untuk memilih.</div>
-                <div class="text-xs font-bold text-yellow-400">Terpilih: <span id="user-sel-count">0</span></div>
-            </div>
-
-            <div id="catalog-container" class="max-w-md mx-auto grid grid-cols-2 gap-3">
-                <div class="col-span-2 flex flex-col items-center justify-center mt-20 space-y-4"><div class="w-10 h-10 border-4 border-emerald-500/30 border-t-emerald-400 rounded-full animate-spin"></div><p class="text-emerald-500/50 text-xs animate-pulse">Memuat produk...</p></div>
+        <div id="view-catalog" class="p-2">
+            <div id="user-bulk-notice" class="hidden mb-2 bg-yellow-600/20 border border-yellow-500/50 p-2 rounded text-center text-[10px] text-yellow-200">Klik produk untuk memilih. Terpilih: <strong id="user-sel-count" class="text-white">0</strong></div>
+            <div id="catalog-container" class="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 pb-24">
+                <div class="col-span-full flex flex-col items-center justify-center mt-10 space-y-2"><div class="w-8 h-8 border-2 border-emerald-500/30 border-t-emerald-400 rounded-full animate-spin"></div><p class="text-emerald-500/50 text-[10px] animate-pulse">Memuat...</p></div>
             </div>
         </div>
 
-        <div id="view-admin" class="hidden w-full max-w-5xl mx-auto">
-            
-            <div class="sticky top-0 z-30 bg-[#020617] px-4 pt-4 pb-2 border-b border-gray-700 shadow-lg">
+        <div id="view-admin" class="hidden w-full max-w-6xl mx-auto">
+            <div class="sticky top-0 z-30 bg-[#020617] px-2 pt-2 pb-1 border-b border-gray-700 shadow-lg">
                 <div class="grid grid-cols-3 gap-1">
-                    <button onclick="switchAdminTab('products')" id="tab-products" class="tab-active py-2 rounded-t-lg text-[10px] sm:text-xs font-bold uppercase tracking-wider">
-                        <i class="fa-solid fa-box block sm:inline mb-1 sm:mb-0"></i> Produk
-                    </button>
-                    <button onclick="switchAdminTab('affiliates')" id="tab-affiliates" class="tab-inactive py-2 rounded-t-lg text-[10px] sm:text-xs font-bold uppercase tracking-wider hover:bg-gray-700">
-                        <i class="fa-solid fa-users block sm:inline mb-1 sm:mb-0"></i> Affiliator
-                    </button>
-                    <button onclick="switchAdminTab('bulk')" id="tab-bulk" class="tab-inactive py-2 rounded-t-lg text-[10px] sm:text-xs font-bold uppercase tracking-wider hover:bg-yellow-900">
-                        <i class="fa-solid fa-link block sm:inline mb-1 sm:mb-0"></i> Ganti Link
-                    </button>
+                    <button onclick="switchAdminTab('products')" id="tab-products" class="tab-active py-2 rounded-t text-[10px] font-bold uppercase tracking-wider">Produk</button>
+                    <button onclick="switchAdminTab('affiliates')" id="tab-affiliates" class="tab-inactive py-2 rounded-t text-[10px] font-bold uppercase tracking-wider hover:bg-gray-700">Affiliator</button>
+                    <button onclick="switchAdminTab('bulk')" id="tab-bulk" class="tab-inactive py-2 rounded-t text-[10px] font-bold uppercase tracking-wider hover:bg-yellow-900">Ganti Link</button>
                 </div>
             </div>
 
-            <div id="panel-products" class="p-4 space-y-6">
-                <div class="glass bg-gray-900/50 p-4 rounded-xl shadow-xl border border-emerald-500/20">
-                    <div class="flex justify-between items-center mb-3">
-                        <h2 class="text-sm font-bold text-white uppercase flex items-center gap-2"><i class="fa-solid fa-pen-to-square text-emerald-400"></i> <span id="form-title">Input Produk</span></h2>
-                        <div class="flex gap-2">
+            <div id="panel-products" class="p-2 space-y-4">
+                <div class="glass bg-gray-900/50 p-3 rounded-lg shadow-xl border border-emerald-500/20">
+                    <div class="flex justify-between items-center mb-2">
+                        <h2 class="text-xs font-bold text-white uppercase"><i class="fa-solid fa-pen-to-square text-emerald-400"></i> <span id="form-title">Input</span></h2>
+                        <div class="flex gap-1">
                             <input type="file" id="csv-input" accept=".csv" class="hidden">
-                            <button onclick="document.getElementById('csv-input').click()" class="bg-blue-600/20 text-blue-400 border border-blue-500/30 hover:bg-blue-600 hover:text-white px-2 py-1 rounded text-[10px] font-bold transition"><i class="fa-solid fa-file-csv"></i> CSV</button>
-                            <button onclick="resetProductForm()" id="btn-cancel" class="hidden text-[10px] bg-red-500/20 text-red-400 px-3 py-1 rounded border border-red-500/30">Batal</button>
+                            <button onclick="document.getElementById('csv-input').click()" class="bg-blue-600/20 text-blue-400 border border-blue-500/30 hover:bg-blue-600 hover:text-white px-2 py-1 rounded text-[9px] font-bold transition">CSV</button>
+                            <button onclick="resetProductForm()" id="btn-cancel" class="hidden text-[9px] bg-red-500/20 text-red-400 px-2 py-1 rounded border border-red-500/30">Batal</button>
                         </div>
                     </div>
-                    <form id="productForm" class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+                    <form id="productForm" class="grid grid-cols-2 gap-2 text-[10px]">
                         <div class="space-y-2">
-                            <div class="flex items-center gap-3 bg-black/40 p-2 rounded border border-white/5">
-                                <img id="preview-img" src="" class="w-12 h-12 bg-gray-800 rounded object-cover hidden">
-                                <div id="preview-placeholder" class="w-12 h-12 bg-gray-800 rounded flex items-center justify-center border border-white/10 text-gray-600"><i class="fa-solid fa-image"></i></div>
-                                <input type="file" id="inp-file" accept="image/*" class="w-full text-[10px] text-gray-400">
+                            <div class="flex items-center gap-2 bg-black/40 p-1.5 rounded border border-white/5">
+                                <img id="preview-img" src="" class="w-8 h-8 bg-gray-800 rounded object-cover hidden">
+                                <div id="preview-placeholder" class="w-8 h-8 bg-gray-800 rounded flex items-center justify-center border border-white/10 text-gray-600"><i class="fa-solid fa-image"></i></div>
+                                <input type="file" id="inp-file" accept="image/*" class="w-full text-[9px] text-gray-400">
                             </div>
-                            <div class="flex gap-2">
-                                <input type="number" id="inp-sort" placeholder="Urut" class="w-16 bg-black/50 border border-white/10 rounded p-2 text-white outline-none focus:border-emerald-500">
-                                <input type="text" id="inp-code" required placeholder="Kode (A01)" class="flex-1 bg-black/50 border border-white/10 rounded p-2 text-white outline-none focus:border-emerald-500">
+                            <div class="flex gap-1">
+                                <input type="number" id="inp-sort" placeholder="No" class="w-10 bg-black/50 border border-white/10 rounded p-1.5 text-white outline-none focus:border-emerald-500">
+                                <input type="text" id="inp-code" required placeholder="Kode" class="flex-1 bg-black/50 border border-white/10 rounded p-1.5 text-white outline-none focus:border-emerald-500">
                             </div>
-                            <input type="text" id="inp-name" required placeholder="Nama Produk" class="w-full bg-black/50 border border-white/10 rounded p-2 text-white outline-none focus:border-emerald-500">
+                            <input type="text" id="inp-name" required placeholder="Nama Produk" class="w-full bg-black/50 border border-white/10 rounded p-1.5 text-white outline-none focus:border-emerald-500">
                         </div>
                         <div class="space-y-2">
-                            <input type="url" id="inp-link" placeholder="Link TikTok (Default)" class="w-full bg-black/50 border border-white/10 rounded p-2 text-white outline-none focus:border-emerald-500">
-                            <input type="number" id="inp-price" required placeholder="Harga (Rp)" class="w-full bg-black/50 border border-white/10 rounded p-2 text-white outline-none focus:border-emerald-500">
-                            <textarea id="inp-desc" rows="1" placeholder="Deskripsi..." class="w-full bg-black/50 border border-white/10 rounded p-2 text-white outline-none focus:border-emerald-500"></textarea>
-                            <div class="bg-black/30 p-1.5 rounded border border-white/5 flex justify-between items-center"><span class="text-[10px] text-gray-400 ml-1">Varian</span><button type="button" onclick="addVariantInput()" class="text-[9px] bg-gray-700 px-2 py-0.5 rounded text-white">Tambah</button></div>
+                            <input type="url" id="inp-link" placeholder="Link Default" class="w-full bg-black/50 border border-white/10 rounded p-1.5 text-white outline-none focus:border-emerald-500">
+                            <input type="number" id="inp-price" required placeholder="Harga" class="w-full bg-black/50 border border-white/10 rounded p-1.5 text-white outline-none focus:border-emerald-500">
+                            <textarea id="inp-desc" rows="1" placeholder="Deskripsi..." class="w-full bg-black/50 border border-white/10 rounded p-1.5 text-white outline-none focus:border-emerald-500"></textarea>
+                            <div class="bg-black/30 p-1 rounded border border-white/5 flex justify-between items-center"><span class="text-gray-400 ml-1">Varian</span><button type="button" onclick="addVariantInput()" class="text-[9px] bg-gray-700 px-1.5 py-0.5 rounded text-white">+</button></div>
                             <div id="variant-container" class="space-y-1"></div>
                         </div>
-                        <button type="submit" id="btn-submit-prod" class="col-span-1 md:col-span-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2 rounded-lg shadow-lg mt-1">SIMPAN DATA</button>
+                        <button type="submit" id="btn-submit-prod" class="col-span-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-1.5 rounded shadow mt-1">SIMPAN</button>
                     </form>
                 </div>
-                <div id="admin-product-list" class="grid grid-cols-2 md:grid-cols-3 gap-3"></div>
+                <div id="admin-product-list" class="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2"></div>
             </div>
 
-            <div id="panel-bulk" class="hidden p-4 space-y-4">
-                <div class="bg-yellow-600/10 border border-yellow-500/30 p-3 rounded-lg text-center">
-                    <p class="text-xs text-yellow-200">Mode Ganti Link Massal. Klik produk untuk memilih.</p>
-                </div>
-                <div id="bulk-product-list" class="grid grid-cols-2 md:grid-cols-3 gap-3"></div>
+            <div id="panel-bulk" class="hidden p-2">
+                <div class="bg-yellow-600/10 border border-yellow-500/30 p-2 rounded text-center mb-2"><p class="text-[10px] text-yellow-200">Mode Ganti Link. Klik produk untuk memilih.</p></div>
+                <div id="bulk-product-list" class="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2"></div>
             </div>
 
-            <div id="panel-affiliates" class="hidden p-4 space-y-6">
-                <div class="glass p-5 rounded-xl bg-gray-900/90">
-                    <h2 class="text-sm font-bold text-white mb-4 uppercase text-emerald-400">Tambah Tim</h2>
-                    <form id="affiliateForm" class="flex flex-col gap-3 text-xs">
-                        <input type="text" id="aff-username" required placeholder="Username" class="bg-black/50 border border-white/10 rounded p-3 text-white">
-                        <input type="text" id="aff-pin" required placeholder="PIN" class="bg-black/50 border border-white/10 rounded p-3 text-white">
-                        <input type="text" id="aff-fullname" required placeholder="Nama Lengkap" class="bg-black/50 border border-white/10 rounded p-3 text-white">
-                        <button type="submit" class="bg-emerald-600 hover:bg-emerald-500 text-white py-3 rounded font-bold shadow-lg">TAMBAH</button>
+            <div id="panel-affiliates" class="hidden p-2 space-y-4">
+                <div class="glass p-3 rounded-lg bg-gray-900/90">
+                    <h2 class="text-xs font-bold text-white mb-2 uppercase text-emerald-400">Tambah Tim</h2>
+                    <form id="affiliateForm" class="flex gap-2 text-[10px]">
+                        <input type="text" id="aff-username" required placeholder="User" class="bg-black/50 border border-white/10 rounded p-2 text-white w-1/3">
+                        <input type="text" id="aff-pin" required placeholder="PIN" class="bg-black/50 border border-white/10 rounded p-2 text-white w-1/4">
+                        <input type="text" id="aff-fullname" required placeholder="Nama" class="bg-black/50 border border-white/10 rounded p-2 text-white flex-1">
+                        <button type="submit" class="bg-emerald-600 hover:bg-emerald-500 text-white px-3 rounded font-bold">OK</button>
                     </form>
                 </div>
-                <div class="glass p-5 rounded-xl bg-gray-900/90 overflow-x-auto">
-                    <table class="w-full text-left text-xs text-gray-400">
-                        <thead class="uppercase border-b border-gray-700"><tr><th class="pb-2">Nama</th><th class="pb-2">User</th><th class="pb-2">PIN</th><th class="pb-2">Aksi</th></tr></thead>
+                <div class="glass p-3 rounded-lg bg-gray-900/90 overflow-x-auto">
+                    <table class="w-full text-left text-[10px] text-gray-400">
+                        <thead class="uppercase border-b border-gray-700"><tr><th class="pb-1">Nama</th><th class="pb-1">User</th><th class="pb-1">PIN</th><th class="pb-1">Aksi</th></tr></thead>
                         <tbody id="affiliate-table-body" class="divide-y divide-gray-800"></tbody>
                     </table>
                 </div>
@@ -159,47 +144,47 @@
         </div>
     </div>
 
-    <div id="bulk-bar" class="hidden fixed bottom-0 left-0 right-0 bg-gray-900 border-t border-yellow-500 p-4 flex justify-between items-center z-50 shadow-[0_-5px_30px_rgba(0,0,0,0.8)]">
-        <div class="text-white text-xs">Terpilih: <b id="selected-count" class="text-yellow-400 text-lg mx-1">0</b> Item</div>
-        <button onclick="openBulkLinkModal()" class="bg-yellow-600 hover:bg-yellow-500 text-black px-5 py-2 rounded-lg font-bold text-xs shadow-lg flex items-center gap-2"><i class="fa-solid fa-link"></i> INPUT LINK</button>
+    <div id="bulk-bar" class="hidden fixed bottom-0 left-0 right-0 bg-gray-900 border-t border-yellow-500 p-3 flex justify-between items-center z-50 shadow-2xl">
+        <div class="text-white text-[10px]">Dipilih: <b id="selected-count" class="text-yellow-400 text-sm mx-1">0</b></div>
+        <button onclick="openBulkLinkModal()" class="bg-yellow-600 hover:bg-yellow-500 text-black px-4 py-1.5 rounded font-bold text-[10px] shadow flex items-center gap-1"><i class="fa-solid fa-link"></i> INPUT LINK</button>
     </div>
 
     <div id="bulk-modal" class="fixed inset-0 bg-black/90 hidden flex items-center justify-center z-50 p-4">
-        <div class="glass w-full max-w-xs p-6 rounded-2xl bg-[#0f172a] border border-white/10">
-            <h3 class="font-bold text-white mb-2 text-sm text-center">Update Link Massal</h3>
-            <p class="text-[10px] text-gray-400 text-center mb-4">Paste link baru. Akan diterapkan ke <span id="modal-sel-count" class="text-white font-bold">0</span> produk.</p>
-            <input type="text" id="inp-bulk-link" placeholder="Paste Link TikTok..." class="w-full bg-black/50 border border-white/10 p-3 rounded-lg text-white text-sm mb-4 outline-none focus:border-emerald-500">
-            <div class="flex justify-end gap-2"><button onclick="document.getElementById('bulk-modal').classList.add('hidden')" class="px-4 py-2 text-gray-400 text-xs hover:text-white">Batal</button><button onclick="submitBulkLink()" class="px-4 py-2 bg-emerald-600 text-white rounded-lg text-xs font-bold hover:bg-emerald-500">SIMPAN</button></div>
+        <div class="glass w-full max-w-xs p-4 rounded-xl bg-[#0f172a] border border-white/10">
+            <h3 class="font-bold text-white mb-1 text-xs text-center">Ganti Link Massal</h3>
+            <p class="text-[9px] text-gray-400 text-center mb-3">Link baru untuk <span id="modal-sel-count">0</span> produk.</p>
+            <input type="text" id="inp-bulk-link" placeholder="Paste Link..." class="w-full bg-black/50 border border-white/10 p-2 rounded text-white text-xs mb-3 outline-none focus:border-emerald-500">
+            <div class="flex justify-end gap-2"><button onclick="document.getElementById('bulk-modal').classList.add('hidden')" class="px-3 py-1.5 text-gray-400 text-[10px]">Batal</button><button onclick="submitBulkLink()" class="px-3 py-1.5 bg-emerald-600 text-white rounded text-[10px] font-bold">SIMPAN</button></div>
         </div>
     </div>
 
     <div id="login-modal" class="fixed inset-0 bg-black/95 z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-gray-900 w-full max-w-xs p-6 rounded-2xl border border-white/10 shadow-2xl relative">
-            <button onclick="toggleLoginModal()" class="absolute top-4 right-4 text-gray-500 hover:text-white"><i class="fa-solid fa-times"></i></button>
-            <div class="text-center mb-6"><h3 class="font-bold text-xl text-white">Login System</h3></div>
-            <form onsubmit="handleLogin(event)" class="space-y-4">
-                <input type="text" id="login-username" placeholder="Username" class="w-full bg-black/50 border border-white/10 p-3 rounded-lg text-white text-sm outline-none">
-                <input type="password" id="login-pin" placeholder="PIN" class="w-full bg-black/50 border border-white/10 p-3 rounded-lg text-white text-sm outline-none">
-                <button type="submit" class="w-full py-3 bg-emerald-600 text-white rounded-lg text-sm font-bold">MASUK</button>
+        <div class="bg-gray-900 w-full max-w-xs p-5 rounded-xl border border-white/10 shadow-2xl relative">
+            <button onclick="toggleLoginModal()" class="absolute top-3 right-3 text-gray-500 hover:text-white"><i class="fa-solid fa-times"></i></button>
+            <div class="text-center mb-4"><h3 class="font-bold text-lg text-white">Login</h3></div>
+            <form onsubmit="handleLogin(event)" class="space-y-3">
+                <input type="text" id="login-username" placeholder="Username" class="w-full bg-black/50 border border-white/10 p-2 rounded text-white text-xs outline-none">
+                <input type="password" id="login-pin" placeholder="PIN" class="w-full bg-black/50 border border-white/10 p-2 rounded text-white text-xs outline-none">
+                <button type="submit" class="w-full py-2 bg-emerald-600 text-white rounded text-xs font-bold">MASUK</button>
             </form>
         </div>
     </div>
 
     <div id="detail-modal" class="fixed inset-0 bg-black/90 backdrop-blur-sm hidden z-40 flex items-center justify-center p-4">
-        <div class="bg-gray-900 w-full max-w-xs rounded-2xl border border-white/10 shadow-2xl flex flex-col max-h-[85vh]">
-            <div class="p-4 flex justify-between bg-gray-900 rounded-t-2xl border-b border-white/5"><h3 class="font-bold text-white text-xs">DETAIL</h3><button onclick="document.getElementById('detail-modal').classList.add('hidden')" class="text-gray-400"><i class="fa-solid fa-times"></i></button></div>
-            <div class="p-5 overflow-y-auto"><div class="flex gap-4 mb-4"><img id="modal-img" src="" class="w-20 h-20 rounded-xl object-cover border border-white/10"><div><h4 id="modal-name" class="font-bold text-white text-sm"></h4><p id="modal-price" class="text-emerald-400 font-bold text-lg"></p></div></div><p id="modal-desc" class="text-[10px] text-gray-400 mb-4"></p><div class="bg-yellow-500/10 border border-yellow-500/20 rounded p-4 text-center"><p class="text-[10px] text-gray-300">Kode Varian:</p><p id="modal-instruction-code" class="text-xl font-bold text-white">A-01</p></div></div>
-            <div class="p-4 border-t border-white/5 bg-gray-900 rounded-b-2xl"><a id="modal-btn-link" href="#" target="_blank" class="block w-full bg-emerald-600 text-white text-center py-3 rounded-xl font-bold text-sm">Buka TikTok Shop</a></div>
+        <div class="bg-gray-900 w-full max-w-xs rounded-xl border border-white/10 shadow-2xl flex flex-col max-h-[85vh]">
+            <div class="p-3 flex justify-between bg-gray-900 rounded-t-xl border-b border-white/5"><h3 class="font-bold text-white text-[10px]">DETAIL</h3><button onclick="document.getElementById('detail-modal').classList.add('hidden')" class="text-gray-400"><i class="fa-solid fa-times text-xs"></i></button></div>
+            <div class="p-4 overflow-y-auto"><div class="flex gap-3 mb-3"><img id="modal-img" src="" class="w-16 h-16 rounded-lg object-cover border border-white/10"><div><h4 id="modal-name" class="font-bold text-white text-xs"></h4><p id="modal-price" class="text-emerald-400 font-bold text-sm"></p></div></div><p id="modal-desc" class="text-[9px] text-gray-400 mb-3"></p><div class="bg-yellow-500/10 border border-yellow-500/20 rounded p-2 text-center"><p class="text-[9px] text-gray-300">Kode:</p><p id="modal-instruction-code" class="text-lg font-bold text-white">A-01</p></div></div>
+            <div class="p-3 border-t border-white/5 bg-gray-900 rounded-b-xl"><a id="modal-btn-link" href="#" target="_blank" class="block w-full bg-emerald-600 text-white text-center py-2 rounded-lg font-bold text-xs">Buka TikTok</a></div>
         </div>
     </div>
 
     <div id="edit-modal" class="fixed inset-0 bg-black/90 hidden flex items-center justify-center z-50 p-4">
-        <div class="glass w-full max-w-xs p-6 rounded-2xl bg-[#0f172a] border border-white/10">
-            <h3 class="font-bold text-white mb-2 text-sm">Edit Link</h3><input type="text" id="input-custom-link" placeholder="Paste Link..." class="w-full bg-black/50 border border-white/10 p-3 rounded text-white text-sm mb-4"><div class="flex justify-end gap-2"><button onclick="document.getElementById('edit-modal').classList.add('hidden')" class="px-4 py-2 text-gray-400 text-xs">Batal</button><button onclick="saveLink()" class="px-4 py-2 bg-emerald-600 text-white rounded text-xs font-bold">Simpan</button></div>
+        <div class="glass w-full max-w-xs p-4 rounded-xl bg-[#0f172a] border border-white/10">
+            <h3 class="font-bold text-white mb-2 text-xs">Edit Link</h3><input type="text" id="input-custom-link" placeholder="Link..." class="w-full bg-black/50 border border-white/10 p-2 rounded text-white text-xs mb-3"><div class="flex justify-end gap-2"><button onclick="document.getElementById('edit-modal').classList.add('hidden')" class="px-3 py-1 text-gray-400 text-[10px]">Batal</button><button onclick="saveLink()" class="px-3 py-1 bg-emerald-600 text-white rounded text-[10px] font-bold">Simpan</button></div>
         </div>
     </div>
 
-    <div id="toast" class="fixed bottom-10 left-1/2 transform -translate-x-1/2 bg-emerald-600 text-white px-5 py-2.5 rounded-full shadow-2xl opacity-0 transition-all duration-300 pointer-events-none z-[100] text-xs font-bold translate-y-10">Berhasil!</div>
+    <div id="toast" class="fixed bottom-10 left-1/2 transform -translate-x-1/2 bg-emerald-600 text-white px-4 py-2 rounded-full shadow-2xl opacity-0 transition-all duration-300 pointer-events-none z-[100] text-[10px] font-bold translate-y-10">Berhasil!</div>
 
     <script>
         const SUPABASE_URL = 'https://qqyggahvwtysefbmpoqr.supabase.co'; 
@@ -207,256 +192,112 @@
         const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
         let currentUser = null, allProducts = [], isEditingId = null, existingImageUrl = "", activeProductForLink = null;
-        let isBulkMode = false, selectedIds = new Set(), currentView = 'catalog'; // catalog, admin-product, admin-affiliate, admin-bulk
+        let isBulkMode = false, selectedIds = new Set();
 
         window.addEventListener('load', async () => { checkLoginSession(); await loadData(); });
 
-        // --- RENDER CARD (ADAPTIF SESUAI MODE) ---
+        // RENDER CARD (UPDATED WITH GOLD BORDER)
         function renderCardHTML(prod, context) {
-            // context: 'catalog-normal', 'catalog-bulk', 'admin-normal', 'admin-bulk'
             const isSel = selectedIds.has(prod.id) ? 'card-selected' : '';
-            const check = selectedIds.has(prod.id) ? '<i class="fa-solid fa-check text-white text-[10px]"></i>' : '';
+            const check = selectedIds.has(prod.id) ? '<i class="fa-solid fa-check text-white"></i>' : '';
             const cardId = `card-${prod.id}`;
-
             let topElement = '';
-            
-            // LOGIKA TAMPILAN ATAS KANAN
+
             if (context === 'admin-normal') {
-                topElement = `
-                    <div class="absolute top-2 left-2 z-20"><input type="number" value="${prod.sort_order||999}" onchange="quickSort(${prod.id}, this.value)" class="w-8 bg-black/80 border border-emerald-500/50 text-center text-emerald-400 text-xs rounded p-1 outline-none font-bold"></div>
-                    <div class="absolute top-2 right-2 flex gap-1 z-20">
-                        <button onclick="editProduct(${prod.id})" class="bg-blue-600 text-white w-7 h-7 rounded shadow flex items-center justify-center"><i class="fa-solid fa-pen text-[10px]"></i></button>
-                        <button onclick="deleteProduct(${prod.id})" class="bg-red-600 text-white w-7 h-7 rounded shadow flex items-center justify-center"><i class="fa-solid fa-trash text-[10px]"></i></button>
-                    </div>`;
+                topElement = `<div class="absolute top-1 right-1 flex gap-1 z-20"><button onclick="editProduct(${prod.id})" class="bg-blue-600 text-white w-5 h-5 rounded flex items-center justify-center shadow"><i class="fa-solid fa-pen text-[8px]"></i></button><button onclick="deleteProduct(${prod.id})" class="bg-red-600 text-white w-5 h-5 rounded flex items-center justify-center shadow"><i class="fa-solid fa-trash text-[8px]"></i></button></div>`;
             } else if (context === 'catalog-normal') {
-                // User bisa edit single link di mode normal (opsional)
-                const editBtn = currentUser ? `<button onclick="openEditLinkModal(${prod.id}, '${prod.name}')" class="absolute top-2 right-2 bg-white text-black w-7 h-7 rounded-full shadow z-20 flex items-center justify-center"><i class="fa-solid fa-pen text-[10px]"></i></button>` : '';
+                const editBtn = currentUser ? `<button onclick="openEditLinkModal(${prod.id}, '${prod.name}')" class="absolute top-1 right-1 bg-white text-black w-5 h-5 rounded-full shadow z-20 flex items-center justify-center edit-btn-affiliate"><i class="fa-solid fa-pen text-[8px]"></i></button>` : '';
                 topElement = editBtn;
             } else if (context.includes('bulk')) {
-                // Mode Bulk (User & Admin) -> Tampilkan Checkbox
-                topElement = `<div class="absolute top-2 right-2 z-20 select-indicator">${check}</div>`;
+                topElement = `<div class="absolute top-1 right-1 z-20 select-indicator">${check}</div>`;
             }
 
-            const buyBtn = (context.includes('catalog')) ? `<button onclick="openDetailPopup(${prod.id})" class="mt-2 w-full bg-emerald-600 text-white text-xs py-2 rounded-lg font-bold">BELI</button>` : '';
-            
-            // Onclick handler logic wrapper
-            const clickAction = context.includes('bulk') ? `toggleSelection(${prod.id})` : ``; // Normal click handled by children or detail popup defaults
+            const buyBtn = (context.includes('catalog')) ? `<button onclick="openDetailPopup(${prod.id})" class="mt-1 w-full bg-emerald-600 text-white text-[9px] py-1.5 rounded font-bold">BELI</button>` : '';
+            const clickAction = context.includes('bulk') ? `toggleSelection(${prod.id})` : ``;
 
+            // === UPDATE DI SINI: BORDER EMAS (#d4af37) DITAMBAHKAN PADA WRAPPER GAMBAR ===
             return `
-                <div id="${cardId}" onclick="${clickAction}" class="glass rounded-xl overflow-hidden relative flex flex-col h-full transition cursor-pointer ${isSel}">
-                    <div class="relative w-full aspect-square overflow-hidden bg-black/20">
-                        <img src="${prod.image_url || 'https://via.placeholder.com/300'}" class="w-full h-full object-cover">
-                        <div class="absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black/80 to-transparent"><span class="inline-block text-[10px] font-bold text-emerald-300 bg-black/60 px-2 py-0.5 rounded border border-emerald-500/30">${prod.product_code || '-'}</span></div>
+                <div id="${cardId}" onclick="${clickAction}" class="glass rounded-lg overflow-hidden relative flex flex-col h-full transition cursor-pointer ${isSel}">
+                    <div class="relative w-full aspect-square overflow-hidden bg-black/20 border border-[#d4af37]/60 rounded-lg shadow-[0_0_5px_rgba(212,175,55,0.2)]">
+                        <img src="${prod.image_url || 'https://via.placeholder.com/150'}" class="w-full h-full object-cover rounded-lg">
+                        <div class="absolute bottom-0 left-0 right-0 p-1 bg-gradient-to-t from-black/80 to-transparent"><span class="inline-block text-[8px] font-bold text-emerald-300 bg-black/60 px-1.5 py-0.5 rounded border border-emerald-500/30">${prod.product_code || '-'}</span></div>
                         ${topElement}
                     </div>
-                    <div class="p-2 flex flex-col flex-grow">
-                        <h4 class="font-bold text-white text-xs truncate">${prod.name}</h4>
-                        <p class="text-emerald-400 font-bold text-[10px] mt-1">Rp ${prod.price.toLocaleString()}</p>
+                    <div class="p-1.5 flex flex-col flex-grow">
+                        <h4 class="font-bold text-white text-[9px] leading-tight truncate">${prod.name}</h4>
+                        <p class="text-emerald-400 font-bold text-[9px]">Rp ${prod.price.toLocaleString()}</p>
                         ${buyBtn}
                     </div>
-                </div>
-            `;
+                </div>`;
         }
 
-        // --- LOADERS ---
         async function loadData() {
             let { data: products } = await sb.from('products').select('*').order('sort_order', { ascending: true });
             allProducts = products || [];
-            
-            // Custom Links logic
             let customLinks = [], owner = null;
             if (currentUser && currentUser.role !== 'admin') owner = currentUser.username;
             else if (window.location.hash.startsWith('#/')) owner = window.location.hash.replace('#/', '');
             if (owner) { const { data } = await sb.from('affiliate_links').select('*').eq('affiliator_username', owner); customLinks = data || []; document.getElementById('shop-info').classList.remove('hidden'); document.getElementById('shop-owner').innerText = owner; }
-
-            // Map Links
             allProducts.forEach(p => { const l = customLinks.find(x => x.product_id === p.id); p.final_link = l ? l.custom_link : p.default_link; });
 
-            // Render Catalog (User View)
-            const catContainer = document.getElementById('catalog-container');
-            catContainer.innerHTML = '';
+            const catContainer = document.getElementById('catalog-container'); catContainer.innerHTML = '';
             const context = isBulkMode ? 'catalog-bulk' : 'catalog-normal';
-            
-            allProducts.forEach(prod => {
-                const d = document.createElement('div');
-                d.innerHTML = renderCardHTML(prod, context);
-                if(!isBulkMode) d.firstElementChild.onclick = (e) => { if(!e.target.closest('button')) openDetailPopup(prod.id); };
-                catContainer.appendChild(d.firstElementChild);
-            });
+            allProducts.forEach(prod => { const d = document.createElement('div'); d.innerHTML = renderCardHTML(prod, context); if(!isBulkMode) d.firstElementChild.onclick = (e) => { if(!e.target.closest('button')) openDetailPopup(prod.id); }; catContainer.appendChild(d.firstElementChild); });
 
-            // Render Admin Views (Jika Login Admin)
-            if(currentUser && currentUser.role === 'admin') {
-                renderAdminList('admin-product-list', 'admin-normal');
-                renderAdminList('bulk-product-list', 'admin-bulk');
-            }
+            if(currentUser && currentUser.role === 'admin') { renderAdminList('admin-product-list', 'admin-normal'); renderAdminList('bulk-product-list', 'admin-bulk'); }
         }
 
-        function renderAdminList(containerId, context) {
-            const container = document.getElementById(containerId);
-            container.innerHTML = '';
-            allProducts.forEach(prod => {
-                const d = document.createElement('div');
-                d.innerHTML = renderCardHTML(prod, context);
-                container.appendChild(d.firstElementChild);
-            });
-        }
+        function renderAdminList(cid, ctx) { const c = document.getElementById(cid); c.innerHTML = ''; allProducts.forEach(p => { const d = document.createElement('div'); d.innerHTML = renderCardHTML(p, ctx); c.appendChild(d.firstElementChild); }); }
 
-        // --- MODE TOGGLING ---
         function toggleUserMode() {
-            isBulkMode = !isBulkMode;
-            const btn = document.getElementById('btn-user-mode');
-            const notice = document.getElementById('user-bulk-notice');
-            const bar = document.getElementById('bulk-bar');
-            
+            isBulkMode = !isBulkMode; const btn = document.getElementById('btn-user-mode'); const notice = document.getElementById('user-bulk-notice'); const bar = document.getElementById('bulk-bar');
             selectedIds.clear(); updateBulkUI();
-
-            if(isBulkMode) {
-                btn.innerHTML = '<i class="fa-solid fa-times"></i> Batal';
-                btn.className = "flex items-center gap-2 bg-red-600 text-white border border-red-500 px-3 py-1.5 rounded-full text-xs font-bold shadow transition";
-                notice.classList.remove('hidden');
-                bar.classList.remove('hidden');
-            } else {
-                btn.innerHTML = '<i class="fa-solid fa-list-check"></i> Pilih Banyak';
-                btn.className = "flex items-center gap-2 bg-gray-700 text-white border border-gray-600 px-3 py-1.5 rounded-full text-xs font-bold shadow transition";
-                notice.classList.add('hidden');
-                bar.classList.add('hidden');
-            }
-            loadData(); // Re-render cards
+            if(isBulkMode) { btn.innerHTML = '<i class="fa-solid fa-times"></i> Batal'; btn.className = "flex items-center gap-1 bg-red-600 text-white border border-red-500 px-2 py-1 rounded text-[10px] font-bold shadow transition"; notice.classList.remove('hidden'); bar.classList.remove('hidden'); }
+            else { btn.innerHTML = '<i class="fa-solid fa-list-check"></i> Pilih'; btn.className = "flex items-center gap-1 bg-gray-700 text-white border border-gray-600 px-2 py-1 rounded text-[10px] font-bold shadow transition"; notice.classList.add('hidden'); bar.classList.add('hidden'); }
+            loadData();
         }
 
         function switchAdminTab(tab) {
-            // Reset Bulk mode internal var if leaving bulk tab
-            document.getElementById('tab-products').className = "tab-inactive py-2 rounded-t-lg text-[10px] sm:text-xs font-bold uppercase tracking-wider hover:bg-gray-700 flex-1";
-            document.getElementById('tab-affiliates').className = "tab-inactive py-2 rounded-t-lg text-[10px] sm:text-xs font-bold uppercase tracking-wider hover:bg-gray-700 flex-1";
-            document.getElementById('tab-bulk').className = "tab-inactive py-2 rounded-t-lg text-[10px] sm:text-xs font-bold uppercase tracking-wider hover:bg-gray-700 flex-1";
-            
-            document.getElementById('panel-products').classList.add('hidden');
-            document.getElementById('panel-affiliates').classList.add('hidden');
-            document.getElementById('panel-bulk').classList.add('hidden');
-            document.getElementById('bulk-bar').classList.add('hidden');
+            document.getElementById('tab-products').className = "tab-inactive py-2 rounded-t text-[10px] font-bold uppercase tracking-wider hover:bg-gray-700";
+            document.getElementById('tab-affiliates').className = "tab-inactive py-2 rounded-t text-[10px] font-bold uppercase tracking-wider hover:bg-gray-700";
+            document.getElementById('tab-bulk').className = "tab-inactive py-2 rounded-t text-[10px] font-bold uppercase tracking-wider hover:bg-gray-700";
+            document.getElementById('panel-products').classList.add('hidden'); document.getElementById('panel-affiliates').classList.add('hidden'); document.getElementById('panel-bulk').classList.add('hidden'); document.getElementById('bulk-bar').classList.add('hidden');
 
-            if(tab === 'products') {
-                document.getElementById('tab-products').className = "tab-active py-2 rounded-t-lg text-[10px] sm:text-xs font-bold uppercase tracking-wider flex-1";
-                document.getElementById('panel-products').classList.remove('hidden');
-                isBulkMode = false;
-            } else if (tab === 'affiliates') {
-                document.getElementById('tab-affiliates').className = "tab-active py-2 rounded-t-lg text-[10px] sm:text-xs font-bold uppercase tracking-wider flex-1";
-                document.getElementById('panel-affiliates').classList.remove('hidden');
-                fetchAffiliates();
-                isBulkMode = false;
-            } else if (tab === 'bulk') {
-                document.getElementById('tab-bulk').className = "tab-bulk py-2 rounded-t-lg text-[10px] sm:text-xs font-bold uppercase tracking-wider flex-1";
-                document.getElementById('panel-bulk').classList.remove('hidden');
-                document.getElementById('bulk-bar').classList.remove('hidden');
-                isBulkMode = true; // Set global bulk flag logic
-                selectedIds.clear(); updateBulkUI();
-                renderAdminList('bulk-product-list', 'admin-bulk');
-            }
+            if(tab === 'products') { document.getElementById('tab-products').className = "tab-active py-2 rounded-t text-[10px] font-bold uppercase tracking-wider"; document.getElementById('panel-products').classList.remove('hidden'); isBulkMode = false; }
+            else if (tab === 'affiliates') { document.getElementById('tab-affiliates').className = "tab-active py-2 rounded-t text-[10px] font-bold uppercase tracking-wider"; document.getElementById('panel-affiliates').classList.remove('hidden'); fetchAffiliates(); isBulkMode = false; }
+            else if (tab === 'bulk') { document.getElementById('tab-bulk').className = "tab-bulk py-2 rounded-t text-[10px] font-bold uppercase tracking-wider"; document.getElementById('panel-bulk').classList.remove('hidden'); document.getElementById('bulk-bar').classList.remove('hidden'); isBulkMode = true; selectedIds.clear(); updateBulkUI(); renderAdminList('bulk-product-list', 'admin-bulk'); }
         }
 
-        // --- SELECTION LOGIC ---
-        function toggleSelection(id) {
-            if(!isBulkMode) return; // Safety check
-            const els = document.querySelectorAll(`#card-${id}`); // Get card in current view
-            
-            if(selectedIds.has(id)) {
-                selectedIds.delete(id);
-                els.forEach(el => {
-                    el.classList.remove('card-selected');
-                    const ind = el.querySelector('.select-indicator');
-                    if(ind) { ind.innerHTML = ''; ind.style.background = 'rgba(0,0,0,0.5)'; ind.style.borderColor = 'white'; }
-                });
-            } else {
-                selectedIds.add(id);
-                els.forEach(el => {
-                    el.classList.add('card-selected');
-                    const ind = el.querySelector('.select-indicator');
-                    if(ind) { ind.innerHTML = '<i class="fa-solid fa-check text-white text-[10px]"></i>'; ind.style.background = '#fbbf24'; ind.style.borderColor = '#fbbf24'; }
-                });
-            }
-            updateBulkUI();
-        }
+        function toggleSelection(id) { if(!isBulkMode) return; const els = document.querySelectorAll(`#card-${id}`); if(selectedIds.has(id)) { selectedIds.delete(id); els.forEach(el => { el.classList.remove('card-selected'); const ind = el.querySelector('.select-indicator'); if(ind) { ind.innerHTML = ''; ind.style.background = 'rgba(0,0,0,0.5)'; ind.style.borderColor = 'white'; } }); } else { selectedIds.add(id); els.forEach(el => { el.classList.add('card-selected'); const ind = el.querySelector('.select-indicator'); if(ind) { ind.innerHTML = '<i class="fa-solid fa-check text-white"></i>'; ind.style.background = '#fbbf24'; ind.style.borderColor = '#fbbf24'; } }); } updateBulkUI(); }
+        function updateBulkUI() { const c = selectedIds.size; document.getElementById('selected-count').innerText = c; document.getElementById('user-sel-count').innerText = c; document.getElementById('modal-sel-count').innerText = c; }
+        function openBulkLinkModal() { if(selectedIds.size === 0) return alert("Pilih produk dulu!"); document.getElementById('bulk-modal').classList.remove('hidden'); }
+        async function submitBulkLink() { const u = document.getElementById('inp-bulk-link').value; if(!u) return alert('Link Kosong'); const ids = Array.from(selectedIds); let err; if (currentUser.role === 'admin') { const { error } = await sb.from('products').update({ default_link: u }).in('id', ids); err = error; } else { const up = ids.map(id => ({ affiliator_username: currentUser.username, product_id: id, custom_link: u })); const { error } = await sb.from('affiliate_links').upsert(up, { onConflict: 'affiliator_username, product_id' }); err = error; } if (!err) { showToast(`Sukses Update ${ids.length} Produk`); document.getElementById('bulk-modal').classList.add('hidden'); document.getElementById('inp-bulk-link').value = ''; if(currentUser.role==='admin') switchAdminTab('products'); else toggleUserMode(); } else alert(err.message); }
 
-        function updateBulkUI() {
-            const count = selectedIds.size;
-            document.getElementById('selected-count').innerText = count;
-            document.getElementById('user-sel-count').innerText = count;
-            document.getElementById('modal-sel-count').innerText = count;
-        }
-
-        function openBulkLinkModal() {
-            if(selectedIds.size === 0) return alert("Pilih produk dulu!");
-            document.getElementById('bulk-modal').classList.remove('hidden');
-        }
-
-        async function submitBulkLink() {
-            const url = document.getElementById('inp-bulk-link').value;
-            if(!url) return alert('Link Kosong');
-            const ids = Array.from(selectedIds);
-            
-            let error;
-            if (currentUser.role === 'admin') {
-                const { error: err } = await sb.from('products').update({ default_link: url }).in('id', ids);
-                error = err;
-            } else {
-                const updates = ids.map(id => ({ affiliator_username: currentUser.username, product_id: id, custom_link: url }));
-                const { error: err } = await sb.from('affiliate_links').upsert(updates, { onConflict: 'affiliator_username, product_id' });
-                error = err;
-            }
-
-            if (!error) {
-                showToast(`Sukses Update ${ids.length} Produk`);
-                document.getElementById('bulk-modal').classList.add('hidden');
-                document.getElementById('inp-bulk-link').value = '';
-                
-                // Refresh data & Reset UI
-                await loadData();
-                selectedIds.clear(); updateBulkUI();
-                if(currentUser.role === 'admin') renderAdminList('bulk-product-list', 'admin-bulk'); // Re-render clean bulk list
-                else { toggleUserMode(); } // Exit user bulk mode
-                
-            } else alert(error.message);
-        }
-
-        // --- AUTH & INIT ---
         function updateUI() {
-            const catalog = document.getElementById('view-catalog'), admin = document.getElementById('view-admin');
-            const btnLogin = document.getElementById('btn-login-trigger'), userMenu = document.getElementById('user-menu');
-            const roleBadge = document.getElementById('user-role-badge'), btnShare = document.getElementById('btn-share'), btnUserMode = document.getElementById('btn-user-mode');
-
-            catalog.classList.remove('hidden'); admin.classList.add('hidden'); btnLogin.classList.remove('hidden'); userMenu.classList.add('hidden');
-            
+            const c = document.getElementById('view-catalog'), a = document.getElementById('view-admin');
+            const l = document.getElementById('btn-login-trigger'), m = document.getElementById('user-menu');
+            const rb = document.getElementById('user-role-badge'), bs = document.getElementById('btn-share'), bu = document.getElementById('btn-user-mode');
+            c.classList.remove('hidden'); a.classList.add('hidden'); l.classList.remove('hidden'); m.classList.add('hidden');
+            document.querySelectorAll('.edit-btn-affiliate').forEach(el => el.classList.add('hidden'));
             if (currentUser) {
-                btnLogin.classList.add('hidden'); userMenu.classList.remove('hidden');
-                roleBadge.innerText = currentUser.role;
-                if (currentUser.role === 'admin') {
-                    catalog.classList.add('hidden'); admin.classList.remove('hidden');
-                    roleBadge.className = "text-[9px] font-bold px-2 py-1 rounded bg-red-600 text-white";
-                    btnShare.classList.add('hidden'); btnUserMode.classList.add('hidden');
-                    switchAdminTab('products'); // Default Tab
-                } else {
-                    roleBadge.className = "text-[9px] font-bold px-2 py-1 rounded bg-emerald-600 text-white";
-                    btnShare.classList.remove('hidden'); btnUserMode.classList.remove('hidden');
-                    window.location.hash = `/${currentUser.username}`;
-                    document.getElementById('shop-info').classList.remove('hidden');
-                    document.getElementById('shop-owner').innerText = currentUser.username;
-                }
+                l.classList.add('hidden'); m.classList.remove('hidden'); rb.innerText = currentUser.role;
+                if (currentUser.role === 'admin') { c.classList.add('hidden'); a.classList.remove('hidden'); rb.className = "text-[9px] font-bold px-2 py-0.5 rounded bg-red-600 text-white"; bs.classList.add('hidden'); bu.classList.add('hidden'); switchAdminTab('products'); }
+                else { rb.className = "text-[9px] font-bold px-2 py-0.5 rounded bg-emerald-600 text-white"; bs.classList.remove('hidden'); bu.classList.remove('hidden'); window.location.hash = `/${currentUser.username}`; document.getElementById('shop-info').classList.remove('hidden'); document.getElementById('shop-owner').innerText = currentUser.username; }
             }
         }
-        
-        // --- BOILERPLATE (Login, CRUD, Helpers) ---
+
+        // --- COMMON ---
         function toggleLoginModal() { document.getElementById('login-modal').classList.toggle('hidden'); }
         async function handleLogin(e) { e.preventDefault(); const { data } = await sb.from('affiliators').select('*').eq('username', document.getElementById('login-username').value.toLowerCase()).eq('pin', document.getElementById('login-pin').value).single(); if (data) { currentUser = data; localStorage.setItem('tobako_user', JSON.stringify(data)); toggleLoginModal(); updateUI(); showToast('Login Berhasil'); } else { alert('Gagal login'); } }
         function handleLogout() { if(confirm('Logout?')) { localStorage.removeItem('tobako_user'); location.reload(); } }
-        function checkLoginSession() { const saved = localStorage.getItem('tobako_user'); if (saved) { currentUser = JSON.parse(saved); updateUI(); } }
-        async function fetchAffiliates(){const b=document.getElementById('affiliate-table-body');const{data:d}=await sb.from('affiliators').select('*').order('id',{ascending:true});b.innerHTML='';if(d){d.forEach(u=>{const me=currentUser&&currentUser.username===u.username;const del=(u.role==='admin'||me)?'':`<button onclick="deleteAffiliate(${u.id})" class="text-red-400"><i class="fa-solid fa-trash"></i></button>`;b.innerHTML+=`<tr class="hover:bg-white/5"><td class="py-2 text-gray-300">${u.full_name}</td><td class="text-emerald-400">${u.username}</td><td class="font-mono">${u.pin}</td><td class="text-right pr-2">${del}</td></tr>`})}}
-        async function quickSort(id,v){await sb.from('products').update({sort_order:v}).eq('id',id);showToast('Urutan Update')}
+        function checkLoginSession() { const s = localStorage.getItem('tobako_user'); if (s) { currentUser = JSON.parse(s); updateUI(); } }
+        async function fetchAffiliates(){const b=document.getElementById('affiliate-table-body');const{data:d}=await sb.from('affiliators').select('*').order('id',{ascending:true});b.innerHTML='';if(d){d.forEach(u=>{const me=currentUser&&currentUser.username===u.username;const del=(u.role==='admin'||me)?'':`<button onclick="deleteAffiliate(${u.id})" class="text-red-400"><i class="fa-solid fa-trash text-[10px]"></i></button>`;b.innerHTML+=`<tr class="hover:bg-white/5"><td class="py-2 text-gray-300">${u.full_name}</td><td class="text-emerald-400">${u.username}</td><td class="font-mono">${u.pin}</td><td class="text-right pr-2">${del}</td></tr>`})}}
         async function deleteProduct(id){if(confirm('Hapus?')){await sb.from('products').delete().eq('id',id);loadData()}}
         async function deleteAffiliate(id){if(confirm('Hapus?')){await sb.from('affiliators').delete().eq('id',id);fetchAffiliates()}}
-        document.getElementById('productForm').addEventListener('submit',async(e)=>{e.preventDefault();const btn=document.getElementById('btn-submit-prod');btn.innerText="Simpan...";btn.disabled=true;const p={sort_order:document.getElementById('inp-sort').value||999,product_code:document.getElementById('inp-code').value,name:document.getElementById('inp-name').value,price:document.getElementById('inp-price').value,description:document.getElementById('inp-desc').value,default_link:document.getElementById('inp-link').value};const f=document.getElementById('inp-file').files[0];let u=existingImageUrl;if(f){const n=`${Date.now()}.png`;await sb.storage.from('product-images').upload(n,f);const{data}=sb.storage.from('product-images').getPublicUrl(n);u=data.publicUrl}p.image_url=u;let v=[];document.querySelectorAll('.variant-input').forEach(i=>{if(i.value.trim())v.push({name:i.value.trim()})});p.variants=JSON.stringify(v);if(isEditingId)await sb.from('products').update(p).eq('id',isEditingId);else await sb.from('products').insert(p);showToast('Tersimpan!');resetProductForm();loadData();btn.innerText="SIMPAN DATA";btn.disabled=false});
-        function editProduct(id){const p=allProducts.find(x=>x.id===id);if(!p)return;isEditingId=p.id;existingImageUrl=p.image_url;document.getElementById('form-title').innerText="Edit: "+p.product_code;document.getElementById('btn-cancel').classList.remove('hidden');document.getElementById('btn-submit-prod').innerText="UPDATE DATA";document.getElementById('btn-submit-prod').className="col-span-1 md:col-span-2 bg-blue-600 hover:bg-blue-500 text-white font-bold py-2 rounded shadow-lg mt-1";document.getElementById('inp-sort').value=p.sort_order;document.getElementById('inp-code').value=p.product_code;document.getElementById('inp-name').value=p.name;document.getElementById('inp-price').value=p.price;document.getElementById('inp-desc').value=p.description;document.getElementById('inp-link').value=p.default_link||'';if(p.image_url){document.getElementById('preview-img').src=p.image_url;document.getElementById('preview-img').classList.remove('hidden');document.getElementById('preview-placeholder').classList.add('hidden')}const c=document.getElementById('variant-container');c.innerHTML='';let v=[];try{v=JSON.parse(p.variants)}catch(e){}if(v)v.forEach(x=>addVariantInput(x.name))}
-        function resetProductForm(){isEditingId=null;existingImageUrl="";document.getElementById('productForm').reset();document.getElementById('btn-cancel').classList.add('hidden');document.getElementById('btn-submit-prod').innerText="SIMPAN DATA";document.getElementById('btn-submit-prod').className="col-span-1 md:col-span-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2 rounded shadow-lg mt-1";document.getElementById('preview-img').classList.add('hidden');document.getElementById('preview-placeholder').classList.remove('hidden');document.getElementById('variant-container').innerHTML='';document.getElementById('form-title').innerText="Input Produk"}
-        function addVariantInput(v=''){const d=document.createElement('div');d.className='flex gap-2';d.innerHTML=`<input type="text" value="${v}" placeholder="Varian" class="variant-input w-full bg-gray-800 border border-white/10 rounded p-1 text-[10px] text-white"><button onclick="this.parentElement.remove()" class="text-red-400"><i class="fa-solid fa-trash"></i></button>`;document.getElementById('variant-container').appendChild(d)}
+        document.getElementById('productForm').addEventListener('submit',async(e)=>{e.preventDefault();const btn=document.getElementById('btn-submit-prod');btn.innerText="Simpan...";btn.disabled=true;const p={sort_order:document.getElementById('inp-sort').value||999,product_code:document.getElementById('inp-code').value,name:document.getElementById('inp-name').value,price:document.getElementById('inp-price').value,description:document.getElementById('inp-desc').value,default_link:document.getElementById('inp-link').value};const f=document.getElementById('inp-file').files[0];let u=existingImageUrl;if(f){const n=`${Date.now()}.png`;await sb.storage.from('product-images').upload(n,f);const{data}=sb.storage.from('product-images').getPublicUrl(n);u=data.publicUrl}p.image_url=u;let v=[];document.querySelectorAll('.variant-input').forEach(i=>{if(i.value.trim())v.push({name:i.value.trim()})});p.variants=JSON.stringify(v);if(isEditingId)await sb.from('products').update(p).eq('id',isEditingId);else await sb.from('products').insert(p);showToast('Tersimpan!');resetProductForm();loadData();btn.innerText="SIMPAN";btn.disabled=false});
+        function editProduct(id){const p=allProducts.find(x=>x.id===id);if(!p)return;isEditingId=p.id;existingImageUrl=p.image_url;document.getElementById('form-title').innerText="Edit";document.getElementById('btn-cancel').classList.remove('hidden');document.getElementById('btn-submit-prod').innerText="UPDATE";document.getElementById('btn-submit-prod').className="col-span-2 bg-blue-600 hover:bg-blue-500 text-white font-bold py-1.5 rounded shadow mt-1";document.getElementById('inp-sort').value=p.sort_order;document.getElementById('inp-code').value=p.product_code;document.getElementById('inp-name').value=p.name;document.getElementById('inp-price').value=p.price;document.getElementById('inp-desc').value=p.description;document.getElementById('inp-link').value=p.default_link||'';if(p.image_url){document.getElementById('preview-img').src=p.image_url;document.getElementById('preview-img').classList.remove('hidden');document.getElementById('preview-placeholder').classList.add('hidden')}const c=document.getElementById('variant-container');c.innerHTML='';let v=[];try{v=JSON.parse(p.variants)}catch(e){}if(v)v.forEach(x=>addVariantInput(x.name))}
+        function resetProductForm(){isEditingId=null;existingImageUrl="";document.getElementById('productForm').reset();document.getElementById('btn-cancel').classList.add('hidden');document.getElementById('btn-submit-prod').innerText="SIMPAN";document.getElementById('btn-submit-prod').className="col-span-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-1.5 rounded shadow mt-1";document.getElementById('preview-img').classList.add('hidden');document.getElementById('preview-placeholder').classList.remove('hidden');document.getElementById('variant-container').innerHTML='';document.getElementById('form-title').innerText="Input"}
+        function addVariantInput(v=''){const d=document.createElement('div');d.className='flex gap-1';d.innerHTML=`<input type="text" value="${v}" placeholder="Varian" class="variant-input w-full bg-gray-800 border border-white/10 rounded p-1 text-[9px] text-white"><button onclick="this.parentElement.remove()" class="text-red-400"><i class="fa-solid fa-trash text-[9px]"></i></button>`;document.getElementById('variant-container').appendChild(d)}
         document.getElementById('inp-file').addEventListener('change',function(e){if(this.files[0]){const r=new FileReader();r.onload=function(e){document.getElementById('preview-img').src=e.target.result;document.getElementById('preview-img').classList.remove('hidden');document.getElementById('preview-placeholder').classList.add('hidden')};r.readAsDataURL(this.files[0])}});
         function openEditLinkModal(i,n){activeProductForLink=i;document.getElementById('edit-product-name').innerText=n;document.getElementById('edit-modal').classList.remove('hidden')}
         async function saveLink(){const l=document.getElementById('input-custom-link').value;await sb.from('affiliate_links').upsert({affiliator_username:currentUser.username,product_id:activeProductForLink,custom_link:l},{onConflict:'affiliator_username,product_id'});showToast('Link Tersimpan');document.getElementById('edit-modal').classList.add('hidden');loadData()}
