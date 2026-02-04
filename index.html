@@ -6,49 +6,54 @@
     <title>TOKONEMBAHMO System</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
-    
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
-    
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
 
     <style>
+        /* LAYOUT UTAMA */
         body { 
             font-family: 'Plus Jakarta Sans', sans-serif; 
             background-color: #020617; 
             color: #e2e8f0;
             margin: 0; padding: 0;
+            height: 100vh; 
+            overflow: hidden; 
+            display: flex;
+            flex-direction: column;
         }
         .hidden { display: none !important; }
         
-        /* Glass Effect */
         .glass { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); }
-        .glass-header { background: rgba(6, 78, 59, 0.95); backdrop-filter: blur(10px); border-bottom: 1px solid rgba(255, 255, 255, 0.1); position: sticky; top: 0; z-index: 50; }
+        .glass-header { background: rgba(6, 78, 59, 0.95); backdrop-filter: blur(10px); border-bottom: 1px solid rgba(255, 255, 255, 0.1); z-index: 50; }
         
-        /* Hilangkan Panah Input Number (Spinner) agar bersih */
-        input[type=number]::-webkit-outer-spin-button,
-        input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
-        input[type=number] { -moz-appearance: textfield; }
+        /* SCROLLBAR */
+        .custom-scroll::-webkit-scrollbar { width: 4px; }
+        .custom-scroll::-webkit-scrollbar-track { background: #0f172a; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: #059669; border-radius: 10px; }
 
+        /* INPUT STYLES */
         input[type="file"]::file-selector-button {
             border-radius: 4px; padding: 0 10px; height: 30px; cursor: pointer;
             background-color: #374151; border: 1px solid rgba(255,255,255,0.1); color: white; margin-right: 10px;
         }
+        input[type=number]::-webkit-outer-spin-button,
+        input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+        input[type=number] { -moz-appearance: textfield; }
 
-        ::-webkit-scrollbar { width: 4px; }
-        ::-webkit-scrollbar-track { background: #022c22; }
-        ::-webkit-scrollbar-thumb { background: #065f46; border-radius: 10px; }
+        /* EFEK SELEKSI MASSAL */
+        .card-selected {
+            border: 2px solid #10b981 !important; /* Border Hijau */
+            background-color: rgba(6, 78, 59, 0.8) !important;
+        }
+        .check-icon { display: none; }
+        .card-selected .check-icon { display: flex; }
     </style>
 </head>
-<body class="min-h-screen relative overflow-x-hidden">
+<body>
 
-    <div class="fixed inset-0 overflow-hidden pointer-events-none z-0">
-        <div class="absolute top-[-10%] left-[-10%] w-[300px] h-[300px] bg-emerald-900/40 rounded-full blur-[80px]"></div>
-        <div class="absolute bottom-[-10%] right-[-10%] w-[300px] h-[300px] bg-green-900/30 rounded-full blur-[80px]"></div>
-    </div>
-
-    <div class="glass-header px-4 py-3 shadow-2xl">
+    <div class="glass-header px-4 py-3 shadow-2xl flex-none">
         <div class="max-w-6xl mx-auto flex justify-between items-center">
             <div class="flex items-center gap-2 cursor-pointer" onclick="window.location.reload()">
                 <div class="w-9 h-9 bg-gradient-to-tr from-emerald-500 to-green-400 rounded-lg flex items-center justify-center text-white font-bold shadow-lg">
@@ -61,7 +66,7 @@
             </div>
             
             <div class="flex items-center gap-3">
-                <button id="btn-login-trigger" onclick="toggleLoginModal()" class="w-9 h-9 flex items-center justify-center rounded-full bg-white/10 text-white hover:bg-emerald-500 transition border border-white/10" title="Login Area">
+                <button id="btn-login-trigger" onclick="toggleLoginModal()" class="w-9 h-9 flex items-center justify-center rounded-full bg-white/10 text-white hover:bg-emerald-500 transition border border-white/10">
                     <i class="fa-solid fa-right-to-bracket text-sm"></i>
                 </button>
 
@@ -70,7 +75,7 @@
                     <button id="btn-share" onclick="copyShopLink()" class="hidden flex items-center gap-2 bg-emerald-500 text-white border border-emerald-400/50 px-3 py-1.5 rounded-full text-xs font-bold shadow hover:bg-emerald-400 transition active:scale-95">
                         <i class="fa-solid fa-share-nodes"></i> <span class="hidden sm:inline">Share</span>
                     </button>
-                    <button onclick="handleLogout()" class="w-8 h-8 flex items-center justify-center rounded-full bg-red-500/20 text-red-400 border border-red-500/30 hover:bg-red-500 hover:text-white transition" title="Keluar">
+                    <button onclick="handleLogout()" class="w-8 h-8 flex items-center justify-center rounded-full bg-red-500/20 text-red-400 border border-red-500/30 hover:bg-red-500 hover:text-white transition">
                         <i class="fa-solid fa-power-off text-xs"></i>
                     </button>
                 </div>
@@ -81,108 +86,109 @@
         </div>
     </div>
 
-    <div id="view-catalog" class="max-w-md mx-auto px-4 pt-6 pb-24 grid grid-cols-2 gap-3 relative z-10">
-        <div class="col-span-2 flex flex-col items-center justify-center mt-20 space-y-4">
-            <div class="w-10 h-10 border-4 border-emerald-500/30 border-t-emerald-400 rounded-full animate-spin"></div>
-            <p class="text-emerald-500/50 text-xs animate-pulse">Memuat produk...</p>
-        </div>
-    </div>
-
-    <div id="view-admin" class="hidden max-w-5xl mx-auto px-4 pt-6 pb-24 relative z-10">
+    <div class="flex-1 flex flex-col overflow-hidden relative z-10">
         
-        <div class="flex gap-2 border-b border-gray-700 mb-6">
-            <button onclick="switchAdminTab('products')" id="tab-products" class="flex-1 px-4 py-3 bg-emerald-600 text-white rounded-t-lg text-xs font-bold uppercase tracking-wider">Produk</button>
-            <button onclick="switchAdminTab('affiliates')" id="tab-affiliates" class="flex-1 px-4 py-3 bg-gray-800 text-gray-400 rounded-t-lg text-xs font-bold uppercase tracking-wider hover:bg-gray-700">Affiliator</button>
+        <div id="view-catalog" class="flex-1 overflow-y-auto custom-scroll p-4">
+            <div class="max-w-md mx-auto grid grid-cols-2 gap-3 pb-24">
+                <div class="col-span-2 flex flex-col items-center justify-center mt-20 space-y-4">
+                    <div class="w-10 h-10 border-4 border-emerald-500/30 border-t-emerald-400 rounded-full animate-spin"></div>
+                    <p class="text-emerald-500/50 text-xs animate-pulse">Memuat produk...</p>
+                </div>
+            </div>
         </div>
 
-        <div id="panel-products" class="space-y-6">
-            <div class="glass p-5 rounded-xl bg-gray-900/90">
-                <div class="flex justify-between items-center mb-4 border-b border-white/10 pb-3">
-                    <h2 class="text-sm font-bold text-white uppercase"><span id="form-title">Input Produk</span></h2>
-                    <div class="flex gap-2">
-                        <input type="file" id="csv-input" accept=".csv" class="hidden">
-                        <button onclick="document.getElementById('csv-input').click()" class="bg-blue-600/20 text-blue-400 border border-blue-500/30 hover:bg-blue-600 hover:text-white px-3 py-1.5 rounded text-[10px] font-bold transition flex items-center gap-1">
-                            <i class="fa-solid fa-file-csv"></i> Import
-                        </button>
-                        <button onclick="resetProductForm()" id="btn-cancel" class="hidden text-[10px] bg-red-500/20 text-red-400 px-3 py-1.5 rounded border border-red-500/30">Batal</button>
-                    </div>
-                </div>
+        <div id="view-admin" class="hidden flex-1 flex flex-col overflow-hidden max-w-5xl mx-auto w-full">
+            
+            <div class="flex gap-2 border-b border-gray-700 bg-[#020617] px-4 pt-4 flex-none z-20">
+                <button onclick="switchAdminTab('products')" id="tab-products" class="flex-1 px-4 py-3 bg-emerald-600 text-white rounded-t-lg text-xs font-bold uppercase tracking-wider">Produk</button>
+                <button onclick="switchAdminTab('affiliates')" id="tab-affiliates" class="flex-1 px-4 py-3 bg-gray-800 text-gray-400 rounded-t-lg text-xs font-bold uppercase tracking-wider hover:bg-gray-700">Affiliator</button>
+            </div>
 
-                <form id="productForm" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div class="space-y-3">
-                         <div class="flex items-center gap-3 bg-black/30 p-2 rounded-lg border border-white/5">
-                            <img id="preview-img" src="" class="w-14 h-14 bg-gray-800 rounded object-cover hidden border border-white/10">
-                            <div id="preview-placeholder" class="w-14 h-14 bg-gray-800 rounded flex items-center justify-center border border-white/10 text-gray-600"><i class="fa-solid fa-image"></i></div>
-                            <div class="flex-1 overflow-hidden">
-                                <label class="text-[10px] text-gray-500 block mb-1">Upload Foto (1:1)</label>
-                                <input type="file" id="inp-file" accept="image/*" class="w-full text-xs text-gray-300">
-                            </div>
-                        </div>
-                        
+            <div id="panel-products" class="flex-1 flex flex-col overflow-hidden relative">
+                
+                <div class="flex-none bg-gray-900/95 border-b border-emerald-500/30 p-4 shadow-xl z-20 overflow-y-auto max-h-[45vh] custom-scroll">
+                    <div class="flex justify-between items-center mb-3">
+                        <h2 class="text-sm font-bold text-white uppercase flex items-center gap-2">
+                            <i class="fa-solid fa-pen-to-square text-emerald-400"></i> <span id="form-title">Input Produk</span>
+                        </h2>
                         <div class="flex gap-2">
-                            <div class="w-1/3">
-                                <label class="text-[10px] text-gray-500">No. Urut</label>
-                                <input type="number" id="inp-sort" placeholder="1" class="w-full bg-black/50 border border-white/10 rounded p-2 text-sm text-white focus:border-emerald-500 outline-none">
-                            </div>
-                            <div class="w-2/3">
-                                <label class="text-[10px] text-yellow-500 font-bold">KODE PRODUK</label>
-                                <input type="text" id="inp-code" required placeholder="A01" class="w-full bg-black/50 border border-white/10 rounded p-2 text-sm text-white focus:border-emerald-500 outline-none">
-                            </div>
-                        </div>
-                        <div>
-                             <label class="text-[10px] text-gray-500">Nama Produk</label>
-                            <input type="text" id="inp-name" required placeholder="Contoh: Papir Jawi" class="w-full bg-black/50 border border-white/10 rounded p-2 text-sm text-white focus:border-emerald-500 outline-none">
+                            <button id="btn-bulk-toggle" onclick="toggleBulkMode()" class="bg-yellow-600/20 text-yellow-400 border border-yellow-500/30 hover:bg-yellow-600 hover:text-white px-2 py-1 rounded text-[10px] font-bold transition">
+                                <i class="fa-solid fa-check-double"></i> Pilih Banyak
+                            </button>
+
+                            <input type="file" id="csv-input" accept=".csv" class="hidden">
+                            <button onclick="document.getElementById('csv-input').click()" class="bg-blue-600/20 text-blue-400 border border-blue-500/30 hover:bg-blue-600 hover:text-white px-2 py-1 rounded text-[10px] font-bold transition"><i class="fa-solid fa-file-csv"></i> Import</button>
+                            <button onclick="resetProductForm()" id="btn-cancel" class="hidden text-[10px] bg-red-500/20 text-red-400 px-3 py-1 rounded border border-red-500/30">Batal</button>
                         </div>
                     </div>
-                    
-                    <div class="space-y-3">
-                        <div>
-                            <label class="text-[10px] text-emerald-400 font-bold">Link TikTok Shop (Default)</label>
-                            <input type="url" id="inp-link" placeholder="https://..." class="w-full bg-black/50 border border-white/10 rounded p-2 text-sm text-white focus:border-emerald-500 outline-none">
-                        </div>
 
-                        <div>
-                            <label class="text-[10px] text-gray-500">Harga (Rp)</label>
-                            <input type="number" id="inp-price" required placeholder="10000" class="w-full bg-black/50 border border-white/10 rounded p-2 text-sm text-white focus:border-emerald-500 outline-none">
+                    <form id="productForm" class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <div class="space-y-2">
+                            <div class="flex items-center gap-3 bg-black/40 p-2 rounded border border-white/5">
+                                <img id="preview-img" src="" class="w-12 h-12 bg-gray-800 rounded object-cover hidden">
+                                <div id="preview-placeholder" class="w-12 h-12 bg-gray-800 rounded flex items-center justify-center border border-white/10 text-gray-600"><i class="fa-solid fa-image"></i></div>
+                                <input type="file" id="inp-file" accept="image/*" class="w-full text-[10px] text-gray-400">
+                            </div>
+                            <div class="flex gap-2">
+                                <input type="number" id="inp-sort" placeholder="Urut" class="w-16 bg-black/50 border border-white/10 rounded p-2 text-xs text-white outline-none focus:border-emerald-500">
+                                <input type="text" id="inp-code" required placeholder="Kode (A01)" class="flex-1 bg-black/50 border border-white/10 rounded p-2 text-xs text-white outline-none focus:border-emerald-500">
+                            </div>
+                            <input type="text" id="inp-name" required placeholder="Nama Produk" class="w-full bg-black/50 border border-white/10 rounded p-2 text-xs text-white outline-none focus:border-emerald-500">
                         </div>
-                        <div>
-                            <label class="text-[10px] text-gray-500">Deskripsi</label>
-                            <textarea id="inp-desc" rows="2" placeholder="Keterangan singkat..." class="w-full bg-black/50 border border-white/10 rounded p-2 text-sm text-white focus:border-emerald-500 outline-none"></textarea>
-                        </div>
-                        
-                        <div class="bg-black/30 p-2 rounded border border-white/5">
-                            <div class="flex justify-between items-center mb-1">
-                                <span class="text-[10px] text-gray-400">Varian Rasa/Warna</span>
-                                <button type="button" onclick="addVariantInput()" class="text-[10px] bg-gray-700 hover:bg-gray-600 px-2 py-0.5 rounded text-white">Tambah</button>
+                        <div class="space-y-2">
+                            <input type="url" id="inp-link" placeholder="Link TikTok (Default)" class="w-full bg-black/50 border border-white/10 rounded p-2 text-xs text-white outline-none focus:border-emerald-500">
+                            <input type="number" id="inp-price" required placeholder="Harga (Rp)" class="w-full bg-black/50 border border-white/10 rounded p-2 text-xs text-white outline-none focus:border-emerald-500">
+                            <textarea id="inp-desc" rows="1" placeholder="Deskripsi..." class="w-full bg-black/50 border border-white/10 rounded p-2 text-xs text-white outline-none focus:border-emerald-500"></textarea>
+                            <div class="bg-black/30 p-1.5 rounded border border-white/5 flex justify-between items-center">
+                                <span class="text-[10px] text-gray-400 ml-1">Varian</span>
+                                <button type="button" onclick="addVariantInput()" class="text-[9px] bg-gray-700 px-2 py-0.5 rounded text-white">Tambah</button>
                             </div>
                             <div id="variant-container" class="space-y-1"></div>
                         </div>
+                        <button type="submit" id="btn-submit-prod" class="col-span-1 md:col-span-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2 rounded-lg text-xs shadow-lg mt-1">SIMPAN DATA</button>
+                    </form>
+                </div>
+
+                <div id="admin-product-list" class="flex-1 overflow-y-auto custom-scroll p-4 space-y-2 pb-20 bg-black/20"></div>
+                
+                <div id="bulk-action-bar" class="hidden absolute bottom-0 left-0 right-0 bg-gray-900 border-t border-emerald-500 p-4 flex justify-between items-center z-50 shadow-2xl">
+                    <div class="text-white text-xs">
+                        Terpilih: <b id="selected-count" class="text-emerald-400 text-lg">0</b> Produk
                     </div>
-                    <button type="submit" id="btn-submit-prod" class="col-span-1 md:col-span-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-lg transition shadow-lg mt-2">SIMPAN PRODUK</button>
-                </form>
+                    <button onclick="openBulkLinkModal()" class="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded font-bold text-xs shadow-lg">
+                        <i class="fa-solid fa-link"></i> Ganti Link Semua
+                    </button>
+                </div>
             </div>
 
-            <div id="admin-product-list" class="space-y-2 pb-10"></div>
+            <div id="panel-affiliates" class="hidden flex-1 overflow-y-auto custom-scroll p-4 space-y-6">
+                <div class="glass p-5 rounded-xl bg-gray-900/90">
+                    <h2 class="text-sm font-bold text-white mb-4 uppercase text-emerald-400">Tambah Tim Baru</h2>
+                    <form id="affiliateForm" class="flex flex-col gap-3">
+                        <input type="text" id="aff-username" required placeholder="Username" class="bg-black/50 border border-white/10 rounded p-3 text-sm text-white">
+                        <input type="text" id="aff-pin" required placeholder="PIN" class="bg-black/50 border border-white/10 rounded p-3 text-sm text-white">
+                        <input type="text" id="aff-fullname" required placeholder="Nama Lengkap" class="bg-black/50 border border-white/10 rounded p-3 text-sm text-white">
+                        <button type="submit" class="bg-emerald-600 hover:bg-emerald-500 text-white py-3 rounded-lg font-bold text-sm shadow-lg">TAMBAH</button>
+                    </form>
+                </div>
+                <div class="glass p-5 rounded-xl bg-gray-900/90">
+                    <table class="w-full text-left text-sm text-gray-400">
+                        <thead class="uppercase text-[10px] text-gray-500 border-b border-gray-700"><tr><th class="pb-2">Nama</th><th class="pb-2">User</th><th class="pb-2">PIN</th><th class="pb-2">Aksi</th></tr></thead>
+                        <tbody id="affiliate-table-body" class="divide-y divide-gray-800 text-xs"></tbody>
+                    </table>
+                </div>
+            </div>
         </div>
+    </div>
 
-        <div id="panel-affiliates" class="hidden space-y-6">
-            <div class="glass p-5 rounded-xl bg-gray-900/90">
-                <h2 class="text-sm font-bold text-white mb-4 uppercase text-emerald-400">Tambah Tim Baru</h2>
-                <form id="affiliateForm" class="flex flex-col gap-3">
-                    <input type="text" id="aff-username" required placeholder="Username (tanpa spasi)" class="bg-black/50 border border-white/10 rounded p-3 text-sm text-white">
-                    <input type="text" id="aff-pin" required placeholder="PIN (angka)" class="bg-black/50 border border-white/10 rounded p-3 text-sm text-white">
-                    <input type="text" id="aff-fullname" required placeholder="Nama Lengkap" class="bg-black/50 border border-white/10 rounded p-3 text-sm text-white">
-                    <button type="submit" class="bg-emerald-600 hover:bg-emerald-500 text-white py-3 rounded-lg font-bold text-sm shadow-lg">TAMBAH AFFILIATOR</button>
-                </form>
-            </div>
-
-            <div class="glass p-5 rounded-xl bg-gray-900/90 overflow-x-auto">
-                <table class="w-full text-left text-sm text-gray-400">
-                    <thead class="uppercase text-[10px] text-gray-500 border-b border-gray-700">
-                        <tr><th class="pb-2">Nama</th><th class="pb-2">User</th><th class="pb-2">PIN</th><th class="pb-2">Aksi</th></tr>
-                    </thead>
-                    <tbody id="affiliate-table-body" class="divide-y divide-gray-800 text-xs"></tbody>
-                </table>
+    <div id="bulk-modal" class="fixed inset-0 bg-black/90 hidden flex items-center justify-center z-50 p-4">
+        <div class="glass w-full max-w-xs p-6 rounded-2xl bg-[#0f172a] border border-white/10">
+            <h3 class="font-bold text-white mb-2 text-sm text-center">Update Link Massal</h3>
+            <p class="text-[10px] text-gray-400 text-center mb-4">Link ini akan diterapkan ke semua produk yang dipilih.</p>
+            <input type="text" id="inp-bulk-link" placeholder="Paste Link TikTok Disini..." class="w-full bg-black/50 border border-white/10 p-3 rounded-lg text-white text-sm mb-4 outline-none focus:border-emerald-500">
+            <div class="flex justify-end gap-2">
+                <button onclick="document.getElementById('bulk-modal').classList.add('hidden')" class="px-4 py-2 text-gray-400 text-xs hover:text-white">Batal</button>
+                <button onclick="submitBulkLink()" class="px-4 py-2 bg-emerald-600 text-white rounded-lg text-xs font-bold hover:bg-emerald-500">Simpan</button>
             </div>
         </div>
     </div>
@@ -190,107 +196,89 @@
     <div id="login-modal" class="fixed inset-0 bg-black/95 z-50 hidden flex items-center justify-center p-4">
         <div class="bg-gray-900 w-full max-w-xs p-6 rounded-2xl border border-white/10 shadow-2xl relative">
             <button onclick="toggleLoginModal()" class="absolute top-4 right-4 text-gray-500 hover:text-white"><i class="fa-solid fa-times"></i></button>
-            <div class="text-center mb-6">
-                <div class="w-12 h-12 bg-emerald-600 rounded-xl mx-auto flex items-center justify-center mb-3 shadow-lg shadow-emerald-500/20">
-                    <i class="fa-solid fa-user-shield text-2xl text-white"></i>
-                </div>
-                <h3 class="font-bold text-xl text-white">Login System</h3>
-                <p class="text-xs text-gray-400">Admin & Affiliator Area</p>
-            </div>
+            <div class="text-center mb-6"><h3 class="font-bold text-xl text-white">Login System</h3></div>
             <form onsubmit="handleLogin(event)" class="space-y-4">
-                <div><input type="text" id="login-username" placeholder="Username" class="w-full bg-black/50 border border-white/10 p-3 rounded-lg text-white focus:border-emerald-500 outline-none text-sm transition"></div>
-                <div><input type="password" id="login-pin" placeholder="PIN Access" class="w-full bg-black/50 border border-white/10 p-3 rounded-lg text-white focus:border-emerald-500 outline-none text-sm transition"></div>
-                <button type="submit" class="w-full py-3 bg-emerald-600 text-white rounded-lg text-sm font-bold hover:bg-emerald-500 shadow-lg transition transform active:scale-95">MASUK</button>
+                <input type="text" id="login-username" placeholder="Username" class="w-full bg-black/50 border border-white/10 p-3 rounded-lg text-white text-sm outline-none">
+                <input type="password" id="login-pin" placeholder="PIN" class="w-full bg-black/50 border border-white/10 p-3 rounded-lg text-white text-sm outline-none">
+                <button type="submit" class="w-full py-3 bg-emerald-600 text-white rounded-lg text-sm font-bold">MASUK</button>
             </form>
         </div>
     </div>
 
     <div id="detail-modal" class="fixed inset-0 bg-black/90 backdrop-blur-sm hidden z-40 flex items-center justify-center p-4">
-        <div class="bg-gray-900 w-full max-w-xs rounded-2xl border border-white/10 shadow-2xl flex flex-col max-h-[85vh] relative">
-            <div class="absolute top-0 left-1/2 -translate-x-1/2 w-20 h-1 bg-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.6)] rounded-full"></div>
-            <div class="p-4 flex justify-between items-center border-b border-white/5 bg-gray-900 rounded-t-2xl">
-                <h3 class="font-bold text-white text-xs tracking-widest uppercase">Detail Produk</h3>
-                <button onclick="document.getElementById('detail-modal').classList.add('hidden')" class="w-8 h-8 rounded-full bg-gray-800 text-gray-400 hover:text-white flex items-center justify-center"><i class="fa-solid fa-times"></i></button>
+        <div class="bg-gray-900 w-full max-w-xs rounded-2xl border border-white/10 shadow-2xl flex flex-col max-h-[85vh]">
+            <div class="p-4 flex justify-between bg-gray-900 rounded-t-2xl border-b border-white/5">
+                <h3 class="font-bold text-white text-xs">DETAIL PRODUK</h3><button onclick="document.getElementById('detail-modal').classList.add('hidden')" class="text-gray-400"><i class="fa-solid fa-times"></i></button>
             </div>
             <div class="p-5 overflow-y-auto">
                 <div class="flex gap-4 mb-4">
-                    <img id="modal-img" src="" class="w-20 h-20 rounded-xl object-cover border border-white/10 shrink-0 bg-gray-800">
+                    <img id="modal-img" src="" class="w-20 h-20 rounded-xl object-cover border border-white/10">
                     <div>
-                        <span id="modal-code" class="text-[9px] font-bold bg-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded border border-emerald-500/30">CODE</span>
-                        <h4 id="modal-name" class="font-bold text-white leading-tight mt-2 mb-1 text-sm"></h4>
-                        <p id="modal-desc" class="text-[10px] text-gray-400 mb-2 leading-relaxed break-words"></p>
+                        <h4 id="modal-name" class="font-bold text-white text-sm"></h4>
+                        <p id="modal-desc" class="text-[10px] text-gray-400 mt-1 mb-2"></p>
                         <p id="modal-price" class="text-emerald-400 font-bold text-lg"></p>
                     </div>
                 </div>
-                <div class="bg-yellow-500/10 border border-yellow-500/20 rounded-xl p-4 mb-5 text-center">
-                    <p class="text-[10px] text-gray-300 mb-1">Pilih varian kode di TikTok:</p>
-                    <p id="modal-instruction-code" class="text-2xl font-black text-white tracking-widest">A-001</p>
+                <div class="bg-yellow-500/10 border border-yellow-500/20 rounded p-4 text-center">
+                    <p class="text-[10px] text-gray-300">Kode Varian:</p><p id="modal-instruction-code" class="text-xl font-bold text-white">A-01</p>
                 </div>
             </div>
             <div class="p-4 border-t border-white/5 bg-gray-900 rounded-b-2xl">
-                <a id="modal-btn-link" href="#" target="_blank" class="flex items-center justify-center gap-2 w-full bg-emerald-600 hover:bg-emerald-500 text-white py-3 rounded-xl font-bold text-sm shadow-lg transition">
-                    <i class="fa-brands fa-tiktok"></i> Buka TikTok Shop
-                </a>
+                <a id="modal-btn-link" href="#" target="_blank" class="block w-full bg-emerald-600 text-white text-center py-3 rounded-xl font-bold text-sm">Buka TikTok Shop</a>
             </div>
         </div>
     </div>
 
     <div id="edit-modal" class="fixed inset-0 bg-black/90 hidden flex items-center justify-center z-50 p-4">
         <div class="glass w-full max-w-xs p-6 rounded-2xl bg-[#0f172a] border border-white/10">
-            <h3 class="font-bold text-white mb-2 text-sm">Edit Link Affiliate</h3>
-            <p id="edit-product-name" class="text-xs text-emerald-400 mb-4 truncate opacity-80"></p>
-            <input type="text" id="input-custom-link" placeholder="Paste Link TikTok..." class="w-full bg-black/50 border border-white/10 p-3 rounded-lg text-white text-sm mb-4 focus:border-emerald-500 outline-none">
+            <h3 class="font-bold text-white mb-2 text-sm">Edit Link</h3>
+            <p id="edit-product-name" class="text-xs text-emerald-400 mb-4 truncate"></p>
+            <input type="text" id="input-custom-link" placeholder="Paste Link..." class="w-full bg-black/50 border border-white/10 p-3 rounded text-white text-sm mb-4">
             <div class="flex justify-end gap-2">
-                <button onclick="document.getElementById('edit-modal').classList.add('hidden')" class="px-4 py-2 text-gray-400 text-xs hover:text-white">Batal</button>
-                <button onclick="saveLink()" class="px-4 py-2 bg-emerald-600 text-white rounded-lg text-xs font-bold hover:bg-emerald-500">Simpan</button>
+                <button onclick="document.getElementById('edit-modal').classList.add('hidden')" class="px-4 py-2 text-gray-400 text-xs">Batal</button>
+                <button onclick="saveLink()" class="px-4 py-2 bg-emerald-600 text-white rounded text-xs font-bold">Simpan</button>
             </div>
         </div>
     </div>
 
-    <div id="toast" class="fixed bottom-10 left-1/2 transform -translate-x-1/2 bg-emerald-600 text-white px-5 py-2.5 rounded-full shadow-2xl opacity-0 transition-all duration-300 pointer-events-none z-[100] text-xs font-bold flex items-center gap-2 translate-y-10">
-        <i class="fa-solid fa-check-circle"></i> <span>Berhasil!</span>
-    </div>
+    <div id="toast" class="fixed bottom-10 left-1/2 transform -translate-x-1/2 bg-emerald-600 text-white px-5 py-2.5 rounded-full shadow-2xl opacity-0 transition-all duration-300 pointer-events-none z-[100] text-xs font-bold translate-y-10">Berhasil!</div>
 
     <script>
         const SUPABASE_URL = 'https://qqyggahvwtysefbmpoqr.supabase.co'; 
         const SUPABASE_KEY = 'sb_publishable_vQfgDnxOeq0F6hykqwUI_g_FxWZYRCP'; 
         const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        let currentUser = null; 
-        let allProducts = [];
-        let isEditingId = null; 
-        let existingImageUrl = "";
+        let currentUser = null; let allProducts = []; let isEditingId = null; let existingImageUrl = ""; 
         let activeProductForLink = null; 
+        
+        // VARIABEL UNTUK BULK EDIT
+        let isBulkMode = false;
+        let selectedIds = new Set();
 
-        window.addEventListener('load', async () => {
-            checkLoginSession(); 
-            await loadData();    
-        });
+        window.addEventListener('load', async () => { checkLoginSession(); await loadData(); });
 
-        // ROUTER UI
         function updateUI() {
-            const catalogView = document.getElementById('view-catalog');
-            const adminView = document.getElementById('view-admin');
+            const catalog = document.getElementById('view-catalog');
+            const admin = document.getElementById('view-admin');
             const btnLogin = document.getElementById('btn-login-trigger');
             const userMenu = document.getElementById('user-menu');
             const roleBadge = document.getElementById('user-role-badge');
             const btnShare = document.getElementById('btn-share');
 
-            catalogView.classList.remove('hidden'); adminView.classList.add('hidden');
+            catalog.classList.remove('hidden'); admin.classList.add('hidden');
             btnLogin.classList.remove('hidden'); userMenu.classList.add('hidden');
             document.querySelectorAll('.edit-btn-affiliate').forEach(el => el.classList.add('hidden'));
 
             if (currentUser) {
                 btnLogin.classList.add('hidden'); userMenu.classList.remove('hidden');
                 roleBadge.innerText = currentUser.role;
-
                 if (currentUser.role === 'admin') {
-                    catalogView.classList.add('hidden'); adminView.classList.remove('hidden');
-                    roleBadge.className = "text-[9px] uppercase font-bold px-2 py-1 rounded bg-red-600 text-white shadow-red-900/50 shadow-lg";
+                    catalog.classList.add('hidden'); admin.classList.remove('hidden');
+                    roleBadge.className = "text-[9px] font-bold px-2 py-1 rounded bg-red-600 text-white";
                     btnShare.classList.add('hidden');
                     loadAdminData(); 
                 } else {
-                    roleBadge.className = "text-[9px] uppercase font-bold px-2 py-1 rounded bg-emerald-600 text-white shadow-emerald-900/50 shadow-lg";
+                    roleBadge.className = "text-[9px] font-bold px-2 py-1 rounded bg-emerald-600 text-white";
                     btnShare.classList.remove('hidden');
                     document.querySelectorAll('.edit-btn-affiliate').forEach(el => el.classList.remove('hidden'));
                     window.location.hash = `/${currentUser.username}`;
@@ -301,77 +289,46 @@
         }
 
         function toggleLoginModal() { document.getElementById('login-modal').classList.toggle('hidden'); }
-
         async function handleLogin(e) {
             e.preventDefault();
-            const username = document.getElementById('login-username').value.toLowerCase();
-            const pin = document.getElementById('login-pin').value;
-            const { data, error } = await sb.from('affiliators').select('*').eq('username', username).eq('pin', pin).single();
-            if (data) {
-                currentUser = data;
-                localStorage.setItem('tobako_user', JSON.stringify(data));
-                toggleLoginModal();
-                updateUI();
-                showToast('Login Berhasil');
-            } else { alert('Username atau PIN salah.'); }
+            const { data } = await sb.from('affiliators').select('*').eq('username', document.getElementById('login-username').value.toLowerCase()).eq('pin', document.getElementById('login-pin').value).single();
+            if (data) { currentUser = data; localStorage.setItem('tobako_user', JSON.stringify(data)); toggleLoginModal(); updateUI(); showToast('Login Berhasil'); } 
+            else { alert('Gagal login'); }
         }
-
-        function handleLogout() {
-            if(confirm('Logout?')) {
-                localStorage.removeItem('tobako_user');
-                currentUser = null;
-                window.location.hash = '';
-                location.reload();
-            }
-        }
-
-        function checkLoginSession() {
-            const saved = localStorage.getItem('tobako_user');
-            if (saved) { currentUser = JSON.parse(saved); updateUI(); }
-        }
+        function handleLogout() { if(confirm('Logout?')) { localStorage.removeItem('tobako_user'); location.reload(); } }
+        function checkLoginSession() { const saved = localStorage.getItem('tobako_user'); if (saved) { currentUser = JSON.parse(saved); updateUI(); } }
 
         async function loadData() {
-            const container = document.getElementById('view-catalog');
+            const container = document.querySelector('#view-catalog .grid');
             let { data: products } = await sb.from('products').select('*').order('sort_order', { ascending: true });
             allProducts = products || [];
-            
-            let customLinks = [];
-            let owner = null;
-            if (currentUser && currentUser.role !== 'admin') { owner = currentUser.username; } 
-            else if (window.location.hash.startsWith('#/')) { owner = window.location.hash.replace('#/', ''); }
-
+            let customLinks = []; let owner = null;
+            if (currentUser && currentUser.role !== 'admin') owner = currentUser.username;
+            else if (window.location.hash.startsWith('#/')) owner = window.location.hash.replace('#/', '');
             if (owner) {
                 const { data } = await sb.from('affiliate_links').select('*').eq('affiliator_username', owner);
                 customLinks = data || [];
                 document.getElementById('shop-info').classList.remove('hidden');
                 document.getElementById('shop-owner').innerText = owner;
             }
-
             container.innerHTML = '';
-            if (allProducts.length === 0) {
-                container.innerHTML = '<div class="col-span-2 text-center text-gray-500 mt-10 p-4 glass rounded-xl">Belum ada produk.</div>';
-                return;
-            }
-
             allProducts.forEach(prod => {
                 const linkData = customLinks.find(l => l.product_id === prod.id);
-                const finalLink = linkData ? linkData.custom_link : prod.default_link;
-                prod.final_link = finalLink; 
-
+                prod.final_link = linkData ? linkData.custom_link : prod.default_link;
                 const card = document.createElement('div');
                 card.className = "glass rounded-xl overflow-hidden relative flex flex-col h-full group hover:bg-white/5 transition";
                 card.innerHTML = `
                     <div class="relative w-full aspect-square overflow-hidden bg-black/20">
-                        <img src="${prod.image_url || 'https://via.placeholder.com/300'}" class="w-full h-full object-cover" loading="lazy">
+                        <img src="${prod.image_url || 'https://via.placeholder.com/300'}" class="w-full h-full object-cover">
                         <div class="absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black/80 to-transparent">
-                            <span class="inline-block text-[10px] font-bold text-emerald-300 bg-black/60 px-2 py-0.5 rounded border border-emerald-500/30 shadow-lg">${prod.product_code || '-'}</span>
+                            <span class="inline-block text-[10px] font-bold text-emerald-300 bg-black/60 px-2 py-0.5 rounded border border-emerald-500/30">${prod.product_code || '-'}</span>
                         </div>
-                        <button onclick="openEditLinkModal(${prod.id}, '${prod.name}')" class="edit-btn-affiliate hidden absolute top-2 right-2 bg-white text-black w-7 h-7 flex items-center justify-center rounded-full shadow hover:scale-110 transition border border-gray-300"><i class="fa-solid fa-pen text-[10px]"></i></button>
+                        <button onclick="openEditLinkModal(${prod.id}, '${prod.name}')" class="edit-btn-affiliate hidden absolute top-2 right-2 bg-white text-black w-7 h-7 flex items-center justify-center rounded-full shadow"><i class="fa-solid fa-pen text-[10px]"></i></button>
                     </div>
                     <div class="p-3 flex flex-col flex-grow">
-                        <h3 class="font-semibold text-xs text-gray-200 line-clamp-2 min-h-[2.5em] mb-1">${prod.name}</h3>
-                        <p class="text-emerald-400 font-bold text-sm">Rp ${prod.price.toLocaleString()}</p>
-                        <button onclick="openDetailPopup(${prod.id})" class="mt-3 w-full bg-emerald-600 hover:bg-emerald-500 text-white text-xs py-2.5 rounded-lg font-bold transition border border-emerald-500/50 shadow-lg shadow-emerald-900/20">BELI</button>
+                        <h3 class="font-semibold text-xs text-gray-200 line-clamp-2 min-h-[2.5em]">${prod.name}</h3>
+                        <p class="text-emerald-400 font-bold text-sm mt-1">Rp ${prod.price.toLocaleString()}</p>
+                        <button onclick="openDetailPopup(${prod.id})" class="mt-3 w-full bg-emerald-600 text-white text-xs py-2 rounded-lg font-bold">BELI</button>
                     </div>
                 `;
                 container.appendChild(card);
@@ -379,8 +336,11 @@
             if(currentUser) updateUI();
         }
 
-        // ADMIN LOGIC
+        // --- ADMIN & BULK SELECTION LOGIC ---
         function switchAdminTab(tab) {
+            // Reset Bulk mode when switching tabs
+            if(isBulkMode) toggleBulkMode();
+            
             if(tab === 'products') {
                 document.getElementById('panel-products').classList.remove('hidden');
                 document.getElementById('panel-affiliates').classList.add('hidden');
@@ -391,58 +351,115 @@
                 document.getElementById('panel-affiliates').classList.remove('hidden');
                 document.getElementById('tab-products').className = "flex-1 px-4 py-3 bg-gray-800 text-gray-400 rounded-t-lg text-xs font-bold uppercase tracking-wider hover:bg-gray-700";
                 document.getElementById('tab-affiliates').className = "flex-1 px-4 py-3 bg-emerald-600 text-white rounded-t-lg text-xs font-bold uppercase tracking-wider";
-                fetchAffiliates(); 
+                fetchAffiliates();
             }
         }
 
-        // FUNGSI LOAD ADMIN DATA (DIPERBAIKI)
         async function loadAdminData() {
             const container = document.getElementById('admin-product-list');
-            
-            // Grid 3 Kolom
-            container.className = "grid grid-cols-2 md:grid-cols-3 gap-3 pb-24";
-            
+            container.className = "grid grid-cols-2 md:grid-cols-3 gap-3 pb-24"; 
             let { data: products } = await sb.from('products').select('*').order('sort_order', { ascending: true });
             container.innerHTML = '';
-            
-            if (!products || products.length === 0) {
-                container.innerHTML = '<p class="col-span-full text-center text-gray-500 py-10">Belum ada produk.</p>';
-                return;
-            }
-
             products.forEach(prod => {
                 const item = document.createElement('div');
-                item.className = "glass bg-gray-800/80 rounded-xl p-3 relative group border border-white/5 hover:border-emerald-500/50 transition flex flex-col items-center text-center";
                 
+                // Menentukan class dan onclick berdasarkan mode
+                const isSelected = selectedIds.has(prod.id);
+                const activeClass = isSelected ? 'card-selected' : '';
+                
+                item.className = `glass bg-gray-800/80 rounded-xl p-3 relative flex flex-col items-center text-center border border-white/5 cursor-pointer transition ${activeClass}`;
+                
+                // Logic OnClick: Kalau Bulk Mode -> Select, Kalau Biasa -> Edit
+                item.onclick = (e) => {
+                    if (isBulkMode) {
+                        // Prevent clicking inputs inside from triggering select
+                        if(e.target.tagName === 'INPUT' || e.target.tagName === 'BUTTON' || e.target.closest('button')) return;
+                        toggleProductSelect(prod.id, item);
+                    }
+                };
+
                 item.innerHTML = `
-                    <div class="absolute top-2 left-2 z-10 shadow-lg">
-                        <input type="number" 
-                            value="${prod.sort_order || 999}" 
-                            onchange="quickSort(${prod.id}, this.value)"
-                            class="w-10 bg-black/80 border border-emerald-500/50 text-center text-emerald-400 text-xs font-bold rounded p-1 focus:outline-none"
-                            title="Nomor Urut">
+                    <div class="check-icon absolute top-2 right-2 bg-emerald-500 rounded-full w-6 h-6 flex items-center justify-center shadow-lg z-20">
+                        <i class="fa-solid fa-check text-white text-xs"></i>
                     </div>
 
-                    <div class="absolute top-2 right-2 z-10 flex gap-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
-                        <button onclick='editProduct(${JSON.stringify(prod)})' class="bg-blue-600 text-white p-1.5 rounded-md shadow hover:bg-blue-500"><i class="fa-solid fa-pen text-[10px]"></i></button>
-                        <button onclick="deleteProduct(${prod.id})" class="bg-red-600 text-white p-1.5 rounded-md shadow hover:bg-red-500"><i class="fa-solid fa-trash text-[10px]"></i></button>
+                    <div class="absolute top-2 left-2 z-10 ${isBulkMode ? 'hidden' : ''}"><input type="number" value="${prod.sort_order || 999}" onchange="quickSort(${prod.id}, this.value)" class="w-10 bg-black/80 border border-emerald-500/50 text-center text-emerald-400 text-xs rounded p-1 outline-none font-bold"></div>
+                    
+                    <div class="absolute top-2 right-2 z-10 flex gap-1 ${isBulkMode ? 'hidden' : ''}">
+                        <button onclick='editProduct(${JSON.stringify(prod)})' class="bg-blue-600 text-white p-1 rounded shadow"><i class="fa-solid fa-pen text-[10px]"></i></button>
+                        <button onclick="deleteProduct(${prod.id})" class="bg-red-600 text-white p-1 rounded shadow"><i class="fa-solid fa-trash text-[10px]"></i></button>
                     </div>
-
-                    <div class="w-full aspect-square rounded-lg overflow-hidden bg-black/30 mb-2 mt-4">
-                        <img src="${prod.image_url || 'https://via.placeholder.com/150'}" class="w-full h-full object-cover opacity-90 group-hover:opacity-100 transition">
-                    </div>
-
-                    <div class="w-full">
-                        <h4 class="font-bold text-white text-xs truncate mb-1" title="${prod.name}">${prod.name}</h4>
-                        <div class="flex justify-between items-center text-[10px] text-gray-400 bg-black/20 px-2 py-1 rounded">
-                            <span class="font-mono text-yellow-500">${prod.product_code}</span>
-                            <span class="text-emerald-400">Rp ${prod.price.toLocaleString()}</span>
-                        </div>
-                    </div>
+                    
+                    <div class="w-full aspect-square rounded-lg overflow-hidden bg-black/30 mb-2 mt-4"><img src="${prod.image_url || 'https://via.placeholder.com/150'}" class="w-full h-full object-cover opacity-80"></div>
+                    <div class="w-full"><h4 class="font-bold text-white text-xs truncate">${prod.name}</h4><p class="text-[10px] text-emerald-400">Rp ${prod.price.toLocaleString()}</p></div>
                 `;
                 container.appendChild(item);
             });
         }
+
+        // --- BULK ACTION LOGIC ---
+        function toggleBulkMode() {
+            isBulkMode = !isBulkMode;
+            const btn = document.getElementById('btn-bulk-toggle');
+            const bar = document.getElementById('bulk-action-bar');
+            
+            if (isBulkMode) {
+                // Aktifkan Mode
+                btn.innerHTML = '<i class="fa-solid fa-times"></i> Batal';
+                btn.classList.remove('bg-yellow-600/20', 'text-yellow-400', 'border-yellow-500/30');
+                btn.classList.add('bg-red-600/20', 'text-red-400', 'border-red-500/30');
+                bar.classList.remove('hidden');
+            } else {
+                // Matikan Mode & Reset
+                btn.innerHTML = '<i class="fa-solid fa-check-double"></i> Pilih Banyak';
+                btn.classList.add('bg-yellow-600/20', 'text-yellow-400', 'border-yellow-500/30');
+                btn.classList.remove('bg-red-600/20', 'text-red-400', 'border-red-500/30');
+                bar.classList.add('hidden');
+                selectedIds.clear();
+                updateBulkCount();
+            }
+            loadAdminData(); // Reload untuk update tampilan kartu
+        }
+
+        function toggleProductSelect(id, element) {
+            if (selectedIds.has(id)) {
+                selectedIds.delete(id);
+                element.classList.remove('card-selected');
+            } else {
+                selectedIds.add(id);
+                element.classList.add('card-selected');
+            }
+            updateBulkCount();
+        }
+
+        function updateBulkCount() {
+            document.getElementById('selected-count').innerText = selectedIds.size;
+        }
+
+        function openBulkLinkModal() {
+            if (selectedIds.size === 0) return alert('Pilih produk dulu!');
+            document.getElementById('bulk-modal').classList.remove('hidden');
+        }
+
+        async function submitBulkLink() {
+            const newLink = document.getElementById('inp-bulk-link').value;
+            if (!newLink) return alert('Link tidak boleh kosong!');
+
+            // Update ke Supabase (Default Link Produk)
+            const { error } = await sb.from('products')
+                .update({ default_link: newLink })
+                .in('id', Array.from(selectedIds));
+
+            if (!error) {
+                showToast(`Link Berhasil Diupdate ke ${selectedIds.size} Produk!`);
+                document.getElementById('bulk-modal').classList.add('hidden');
+                document.getElementById('inp-bulk-link').value = '';
+                toggleBulkMode(); // Keluar mode bulk
+            } else {
+                alert('Gagal update: ' + error.message);
+            }
+        }
+        // -------------------------
 
         async function fetchAffiliates() {
             const tbody = document.getElementById('affiliate-table-body');
@@ -452,54 +469,32 @@
                 data.forEach(user => {
                     const isMe = currentUser && currentUser.username === user.username;
                     const delBtn = (user.role === 'admin' || isMe) ? '' : `<button onclick="deleteAffiliate(${user.id})" class="text-red-400 hover:text-white bg-red-500/10 p-1.5 rounded"><i class="fa-solid fa-trash"></i></button>`;
-                    tbody.innerHTML += `
-                        <tr class="hover:bg-white/5 transition">
-                            <td class="py-3 font-bold text-gray-300">${user.full_name}</td>
-                            <td class="text-emerald-400">${user.username}</td>
-                            <td class="font-mono">${user.pin}</td>
-                            <td class="text-right pr-2">${delBtn}</td>
-                        </tr>`;
+                    tbody.innerHTML += `<tr class="hover:bg-white/5"><td class="py-2 text-gray-300">${user.full_name}</td><td class="text-emerald-400">${user.username}</td><td class="font-mono">${user.pin}</td><td class="text-right pr-2">${delBtn}</td></tr>`;
                 });
             }
         }
 
-        document.getElementById('affiliateForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const { error } = await sb.from('affiliators').insert({
-                username: document.getElementById('aff-username').value.toLowerCase().replace(/\s/g, ''),
-                pin: document.getElementById('aff-pin').value,
-                full_name: document.getElementById('aff-fullname').value,
-                role: 'affiliate'
-            });
-            if(!error) { showToast('Affiliator Ditambah'); e.target.reset(); fetchAffiliates(); }
-            else { alert(error.message); }
-        });
+        async function quickSort(id, val) { await sb.from('products').update({sort_order: val}).eq('id', id); showToast('Urutan Update'); }
+        async function deleteProduct(id) { if(confirm('Hapus?')) { await sb.from('products').delete().eq('id', id); loadAdminData(); } }
+        async function deleteAffiliate(id) { if(confirm('Hapus?')) { await sb.from('affiliators').delete().eq('id', id); fetchAffiliates(); } }
 
-        async function deleteAffiliate(id) {
-            if(confirm('Hapus affiliator ini?')) { await sb.from('affiliators').delete().eq('id', id); fetchAffiliates(); }
-        }
-
-        // SAVE PRODUCT
         document.getElementById('productForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const btn = document.getElementById('btn-submit-prod');
-            const originalText = btn.innerText;
-            btn.disabled = true; btn.innerText = "Simpan...";
-
+            const btn = document.getElementById('btn-submit-prod'); btn.innerText = "Simpan..."; btn.disabled = true;
+            
             const payload = {
                 sort_order: document.getElementById('inp-sort').value || 999,
                 product_code: document.getElementById('inp-code').value,
                 name: document.getElementById('inp-name').value,
                 price: document.getElementById('inp-price').value,
                 description: document.getElementById('inp-desc').value,
-                default_link: document.getElementById('inp-link').value, 
+                default_link: document.getElementById('inp-link').value
             };
 
-            const fileInput = document.getElementById('inp-file');
+            const file = document.getElementById('inp-file').files[0];
             let imageUrl = existingImageUrl;
-            if (fileInput.files.length > 0) {
-                 const file = fileInput.files[0];
-                 const fileName = `${Date.now()}.${file.name.split('.').pop()}`;
+            if (file) {
+                 const fileName = `${Date.now()}.png`;
                  await sb.storage.from('product-images').upload(fileName, file);
                  const { data } = sb.storage.from('product-images').getPublicUrl(fileName);
                  imageUrl = data.publicUrl;
@@ -507,164 +502,114 @@
             payload.image_url = imageUrl;
             
             let variants = [];
-            document.querySelectorAll('.variant-input').forEach(inp => {
-                if(inp.value.trim()) variants.push({ name: inp.value.trim() });
-            });
+            document.querySelectorAll('.variant-input').forEach(inp => { if(inp.value.trim()) variants.push({ name: inp.value.trim() }); });
             payload.variants = JSON.stringify(variants);
 
             if(isEditingId) await sb.from('products').update(payload).eq('id', isEditingId);
             else await sb.from('products').insert(payload);
             
-            showToast('Produk Disimpan');
-            resetProductForm();
-            loadAdminData();
-            btn.disabled = false; btn.innerText = originalText;
+            showToast('Tersimpan!'); resetProductForm(); loadAdminData();
+            btn.innerText = "SIMPAN DATA"; btn.disabled = false;
         });
 
         function editProduct(prod) {
-            isEditingId = prod.id;
-            existingImageUrl = prod.image_url;
-            document.getElementById('form-title').innerText = "Edit Produk";
+            isEditingId = prod.id; existingImageUrl = prod.image_url;
+            document.getElementById('form-title').innerText = "Edit: " + prod.product_code;
             document.getElementById('btn-cancel').classList.remove('hidden');
-            document.getElementById('btn-submit-prod').innerText = "Update";
-            document.getElementById('btn-submit-prod').className = "col-span-1 md:col-span-2 bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-lg transition shadow-lg mt-2";
+            document.getElementById('btn-submit-prod').innerText = "UPDATE DATA";
+            document.getElementById('btn-submit-prod').className = "col-span-1 md:col-span-2 bg-blue-600 hover:bg-blue-500 text-white font-bold py-2 rounded-lg text-xs shadow-lg mt-1";
             
             document.getElementById('inp-sort').value = prod.sort_order;
             document.getElementById('inp-code').value = prod.product_code;
             document.getElementById('inp-name').value = prod.name;
             document.getElementById('inp-price').value = prod.price;
             document.getElementById('inp-desc').value = prod.description;
-            document.getElementById('inp-link').value = prod.default_link || ''; 
+            document.getElementById('inp-link').value = prod.default_link || '';
             
             if(prod.image_url) {
                 document.getElementById('preview-img').src = prod.image_url;
                 document.getElementById('preview-img').classList.remove('hidden');
                 document.getElementById('preview-placeholder').classList.add('hidden');
             }
-
-            const container = document.getElementById('variant-container');
-            container.innerHTML = '';
-            let variants = [];
-            try { variants = typeof prod.variants === 'string' ? JSON.parse(prod.variants) : prod.variants; } catch(e){}
-            if(variants && variants.length) variants.forEach(v => addVariantInput(v.name));
-            document.getElementById('panel-products').scrollIntoView({behavior: 'smooth'});
+            
+            const container = document.getElementById('variant-container'); container.innerHTML = '';
+            let variants = []; try { variants = JSON.parse(prod.variants); } catch(e){}
+            if(variants) variants.forEach(v => addVariantInput(v.name));
         }
-        
+
         function resetProductForm() {
             isEditingId = null; existingImageUrl = "";
             document.getElementById('productForm').reset();
             document.getElementById('btn-cancel').classList.add('hidden');
-            document.getElementById('btn-submit-prod').innerText = "Simpan Produk";
-            document.getElementById('btn-submit-prod').className = "col-span-1 md:col-span-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-lg transition shadow-lg mt-2";
+            document.getElementById('btn-submit-prod').innerText = "SIMPAN DATA";
+            document.getElementById('btn-submit-prod').className = "col-span-1 md:col-span-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2 rounded-lg text-xs shadow-lg mt-1";
             document.getElementById('preview-img').classList.add('hidden');
             document.getElementById('preview-placeholder').classList.remove('hidden');
             document.getElementById('variant-container').innerHTML = '';
             document.getElementById('form-title').innerText = "Input Produk";
         }
-        
-        async function deleteProduct(id) {
-            if(confirm('Hapus produk?')) { await sb.from('products').delete().eq('id', id); loadAdminData(); }
-        }
-        
-        async function quickSort(id, val) { 
-            await sb.from('products').update({sort_order: val}).eq('id', id);
-            showToast('Urutan Disimpan');
+
+        function addVariantInput(val = '') {
+            const div = document.createElement('div'); div.className = 'flex gap-2';
+            div.innerHTML = `<input type="text" value="${val}" placeholder="Varian" class="variant-input w-full bg-gray-800 border border-white/10 rounded p-1 text-[10px] text-white"><button onclick="this.parentElement.remove()" class="text-red-400"><i class="fa-solid fa-trash"></i></button>`;
+            document.getElementById('variant-container').appendChild(div);
         }
 
-        function addVariantInput(value = '') {
-            const container = document.getElementById('variant-container');
-            const div = document.createElement('div');
-            div.className = 'flex gap-2';
-            div.innerHTML = `
-                <input type="text" value="${value}" placeholder="Varian" class="variant-input w-full bg-gray-800 border border-white/10 rounded p-1 text-[10px] text-white">
-                <button type="button" onclick="this.parentElement.remove()" class="text-red-400 hover:text-red-300 px-2"><i class="fa-solid fa-trash"></i></button>
-            `;
-            container.appendChild(div);
-        }
-
-        // Preview Image
         document.getElementById('inp-file').addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (file) {
+            if(this.files[0]) {
                 const reader = new FileReader();
                 reader.onload = function(e) {
                     document.getElementById('preview-img').src = e.target.result;
                     document.getElementById('preview-img').classList.remove('hidden');
                     document.getElementById('preview-placeholder').classList.add('hidden');
                 }
-                reader.readAsDataURL(file);
+                reader.readAsDataURL(this.files[0]);
             }
         });
 
-        // OTHER FUNCTIONS
-        function openEditLinkModal(id, name) {
-            activeProductForLink = id;
-            document.getElementById('edit-product-name').innerText = name;
-            document.getElementById('edit-modal').classList.remove('hidden');
+        async function copyShopLink() {
+            const url = `${window.location.origin}${window.location.pathname}#/${currentUser.username}`;
+            await navigator.clipboard.writeText(url); showToast('Link Disalin');
         }
-        
+        function openEditLinkModal(id, name) { activeProductForLink = id; document.getElementById('edit-product-name').innerText = name; document.getElementById('edit-modal').classList.remove('hidden'); }
         async function saveLink() {
             const link = document.getElementById('input-custom-link').value;
-            if(!link) return alert('Link kosong');
-            await sb.from('affiliate_links').upsert({
-                affiliator_username: currentUser.username,
-                product_id: activeProductForLink,
-                custom_link: link
-            }, { onConflict: 'affiliator_username, product_id' });
-            showToast('Link Tersimpan');
-            document.getElementById('edit-modal').classList.add('hidden');
-            loadData(); 
+            await sb.from('affiliate_links').upsert({ affiliator_username: currentUser.username, product_id: activeProductForLink, custom_link: link }, { onConflict: 'affiliator_username, product_id' });
+            showToast('Link Tersimpan'); document.getElementById('edit-modal').classList.add('hidden'); loadData();
         }
-
         function openDetailPopup(id) {
             const prod = allProducts.find(p => p.id === id);
-            if(!prod) return;
             document.getElementById('modal-name').innerText = prod.name;
             document.getElementById('modal-img').src = prod.image_url || 'https://via.placeholder.com/100';
-            document.getElementById('modal-code').innerText = prod.product_code;
             document.getElementById('modal-desc').innerText = prod.description || '';
             document.getElementById('modal-price').innerText = `Rp ${prod.price.toLocaleString()}`;
-            document.getElementById('modal-instruction-code').innerText = prod.product_code;
             document.getElementById('modal-btn-link').href = prod.final_link || '#';
             document.getElementById('detail-modal').classList.remove('hidden');
         }
-
-        async function copyShopLink() {
-            const url = `${window.location.origin}${window.location.pathname}#/${currentUser.username}`;
-            await navigator.clipboard.writeText(url);
-            showToast('Link Disalin');
-        }
-
         function showToast(msg) {
-            const t = document.getElementById('toast');
-            t.innerHTML = `<i class="fa-solid fa-check-circle"></i> <span>${msg}</span>`;
-            t.classList.remove('opacity-0', 'translate-y-10');
+            const t = document.getElementById('toast'); t.innerText = msg; t.classList.remove('opacity-0', 'translate-y-10');
             setTimeout(() => t.classList.add('opacity-0', 'translate-y-10'), 2000);
         }
         
-        document.getElementById('csv-input').addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (!file) return;
-            if(!confirm("Lanjut import?")) { this.value = ''; return; }
-            Papa.parse(file, {
-                header: true, skipEmptyLines: true,
-                complete: async function(results) {
-                    let count = 0;
-                    for (let row of results.data) {
-                        try {
-                            await sb.from('products').insert({
-                                product_code: row.product_code || `CSV-${Date.now()}`,
-                                name: row.name || 'No Name',
-                                price: parseInt(row.price) || 0,
-                                description: row.description || '',
-                                sort_order: 999
-                            });
-                            count++;
-                        } catch (err) {}
-                    }
-                    showToast(`${count} Produk Diimport`); loadAdminData();
-                }
+        document.getElementById('affiliateForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            await sb.from('affiliators').insert({
+                username: document.getElementById('aff-username').value.toLowerCase().replace(/\s/g, ''),
+                pin: document.getElementById('aff-pin').value,
+                full_name: document.getElementById('aff-fullname').value,
+                role: 'affiliate'
             });
+            showToast('Affiliator Ditambah'); e.target.reset(); fetchAffiliates();
+        });
+        
+        document.getElementById('csv-input').addEventListener('change', function(e) {
+            if (!this.files[0]) return;
+            Papa.parse(this.files[0], { header: true, skipEmptyLines: true, complete: async function(results) {
+                for (let row of results.data) {
+                    try { await sb.from('products').insert({ product_code: row.product_code || `CSV-${Date.now()}`, name: row.name || 'No Name', price: parseInt(row.price) || 0, description: row.description || '', sort_order: 999 }); } catch (err) {}
+                }
+                showToast('Import Selesai'); loadAdminData();
+            }});
         });
     </script>
 </body>
