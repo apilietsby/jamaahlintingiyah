@@ -12,7 +12,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
 
     <style>
-        /* === STRUKTUR LAYOUT ANTI-MACET (FINAL) === */
+        /* === PERBAIKAN SCROLLING & LAYOUT (SUPAYA TIDAK MACET) === */
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         
         body { 
@@ -20,13 +20,14 @@
             background-color: #020617; 
             color: #e2e8f0;
             margin: 0; padding: 0;
-            height: 100vh; /* Tinggi layar penuh */
-            height: 100dvh; /* Support mobile modern */
-            overflow: hidden; /* Body dilarang scroll */
+            /* Kunci tinggi layar agar scroll hanya terjadi di area konten */
+            height: 100vh; 
+            height: 100dvh; 
+            overflow: hidden; 
             display: flex; flex-direction: column;
         }
 
-        /* Header Statis */
+        /* HEADER DIAM DI ATAS */
         .glass-header { 
             flex: none; 
             background: rgba(6, 78, 59, 0.98); 
@@ -35,44 +36,44 @@
             z-index: 50; 
         }
 
-        /* Area Konten Utama (Scrollable) */
+        /* AREA KONTEN YANG BISA DI-SCROLL */
         #main-content {
             flex: 1;
             position: relative;
-            overflow-y: auto; /* Scroll terjadi di sini */
-            -webkit-overflow-scrolling: touch; /* Wajib untuk iPhone agar licin */
-            padding-bottom: 120px; /* Ruang lebih bawah agar tidak tertutup tombol */
+            overflow-y: auto; /* Scrollbar muncul di sini */
+            -webkit-overflow-scrolling: touch; /* Wajib untuk HP agar licin */
+            padding-bottom: 100px; /* Ruang kosong di bawah agar tidak tertutup tombol */
         }
 
-        /* Utility Classes */
+        /* UI Utilities */
         .hidden { display: none !important; }
         .glass { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); }
         
-        /* Checkbox Seleksi (Kecil di Pojok) */
-        .select-checkbox {
-            width: 24px; height: 24px;
+        /* TOMBOL PILIH KECIL (CHECKBOX STYLE) */
+        .select-btn {
+            width: 28px; height: 28px;
             border-radius: 6px;
-            border: 2px solid white;
-            background-color: rgba(0,0,0,0.5);
+            border: 2px solid rgba(255,255,255,0.3);
+            background-color: rgba(0,0,0,0.6);
             display: flex; align-items: center; justify-content: center;
-            transition: all 0.2s;
+            cursor: pointer; transition: all 0.2s;
         }
-        .is-selected .select-checkbox {
-            background-color: #10b981; /* Hijau saat dipilih */
+        /* Saat Dipilih */
+        .is-selected .select-btn {
+            background-color: #10b981; /* Hijau */
             border-color: #10b981;
+            color: white;
         }
         /* Border Kartu saat dipilih */
-        .is-selected { border-color: #10b981 !important; background-color: rgba(6, 78, 59, 0.3) !important; }
+        .is-selected { 
+            border: 2px solid #10b981 !important; 
+            background-color: rgba(6, 78, 59, 0.3) !important; 
+        }
 
-        /* Input Styles */
+        /* Fix Input Browser HP */
         input[type=number]::-webkit-outer-spin-button, input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
         input[type=number] { -moz-appearance: textfield; }
         input[type="file"]::file-selector-button { border-radius: 4px; padding: 0 10px; height: 30px; background-color: #374151; border: 1px solid rgba(255,255,255,0.1); color: white; margin-right: 10px; }
-        
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar { width: 4px; }
-        ::-webkit-scrollbar-track { background: #0f172a; }
-        ::-webkit-scrollbar-thumb { background: #059669; border-radius: 10px; }
     </style>
 </head>
 <body>
@@ -83,11 +84,20 @@
                 <div class="w-9 h-9 bg-gradient-to-tr from-emerald-500 to-green-400 rounded-lg flex items-center justify-center text-white font-bold shadow-lg"><i class="fa-solid fa-leaf"></i></div>
                 <div><h1 class="font-bold text-lg text-white leading-tight tracking-wider">TOKO<span class="text-emerald-300">NEMBAHMO</span></h1></div>
             </div>
+            
             <div class="flex items-center gap-3">
                 <button id="btn-login-trigger" onclick="toggleLoginModal()" class="w-9 h-9 flex items-center justify-center rounded-full bg-white/10 text-white hover:bg-emerald-500 transition border border-white/10"><i class="fa-solid fa-right-to-bracket text-sm"></i></button>
+                
                 <div id="user-menu" class="hidden flex items-center gap-2">
-                    <button id="btn-user-select" onclick="toggleBulkMode()" class="hidden flex items-center gap-2 bg-yellow-600/80 text-white border border-yellow-500/50 px-3 py-1.5 rounded-full text-xs font-bold shadow hover:bg-yellow-500 transition"><i class="fa-solid fa-list-check"></i> <span class="hidden sm:inline">Pilih</span></button>
-                    <button id="btn-share" onclick="copyShopLink()" class="hidden flex items-center gap-2 bg-emerald-500 text-white border border-emerald-400/50 px-3 py-1.5 rounded-full text-xs font-bold shadow hover:bg-emerald-400 transition"><i class="fa-solid fa-share-nodes"></i> <span class="hidden sm:inline">Share</span></button>
+                    <span id="user-role-badge" class="text-[10px] uppercase font-bold px-2 py-1 rounded bg-gray-800 text-gray-300 border border-gray-600">USER</span>
+                    
+                    <button id="btn-user-select" onclick="toggleBulkMode()" class="hidden flex items-center gap-2 bg-yellow-600/80 text-white border border-yellow-500/50 px-3 py-1.5 rounded-full text-xs font-bold shadow hover:bg-yellow-500 transition active:scale-95">
+                        <i class="fa-solid fa-list-check"></i> <span class="hidden sm:inline">Pilih</span>
+                    </button>
+
+                    <button id="btn-share" onclick="copyShopLink()" class="hidden flex items-center gap-2 bg-emerald-500 text-white border border-emerald-400/50 px-3 py-1.5 rounded-full text-xs font-bold shadow hover:bg-emerald-400 transition active:scale-95">
+                        <i class="fa-solid fa-share-nodes"></i> <span class="hidden sm:inline">Share</span>
+                    </button>
                     <button onclick="handleLogout()" class="w-8 h-8 flex items-center justify-center rounded-full bg-red-500/20 text-red-400 border border-red-500/30 hover:bg-red-500 hover:text-white transition"><i class="fa-solid fa-power-off text-xs"></i></button>
                 </div>
             </div>
@@ -99,11 +109,14 @@
         
         <div id="view-catalog" class="p-4">
             <div id="catalog-container" class="max-w-md mx-auto grid grid-cols-2 gap-3">
-                <div class="col-span-2 flex flex-col items-center justify-center mt-20 space-y-4"><div class="w-10 h-10 border-4 border-emerald-500/30 border-t-emerald-400 rounded-full animate-spin"></div><p class="text-emerald-500/50 text-xs animate-pulse">Memuat produk...</p></div>
+                <div class="col-span-2 flex flex-col items-center justify-center mt-20 space-y-4">
+                    <div class="w-10 h-10 border-4 border-emerald-500/30 border-t-emerald-400 rounded-full animate-spin"></div>
+                    <p class="text-emerald-500/50 text-xs animate-pulse">Memuat produk...</p>
+                </div>
             </div>
         </div>
 
-        <div id="view-admin" class="hidden max-w-5xl mx-auto w-full">
+        <div id="view-admin" class="hidden w-full max-w-5xl mx-auto">
             <div class="sticky top-0 z-30 bg-[#020617] px-4 pt-4 pb-2 border-b border-gray-700 shadow-lg">
                 <div class="flex gap-2">
                     <button onclick="switchAdminTab('products')" id="tab-products" class="flex-1 px-4 py-3 bg-emerald-600 text-white rounded-lg text-xs font-bold uppercase tracking-wider">Produk</button>
@@ -116,7 +129,10 @@
                     <div class="flex justify-between items-center mb-3">
                         <h2 class="text-sm font-bold text-white uppercase flex items-center gap-2"><i class="fa-solid fa-pen-to-square text-emerald-400"></i> <span id="form-title">Input Produk</span></h2>
                         <div class="flex gap-2">
-                            <button id="btn-admin-select" onclick="toggleBulkMode()" class="bg-yellow-600 text-black border border-yellow-500 hover:bg-yellow-500 px-3 py-1 rounded text-[10px] font-bold transition shadow-lg"><i class="fa-solid fa-check-square"></i> GANTI LINK</button>
+                            <button id="btn-admin-select" onclick="toggleBulkMode()" class="bg-yellow-600 text-black border border-yellow-500 hover:bg-yellow-500 px-3 py-1 rounded text-[10px] font-bold transition shadow-lg flex items-center gap-1">
+                                <i class="fa-solid fa-check-square"></i> GANTI LINK
+                            </button>
+
                             <input type="file" id="csv-input" accept=".csv" class="hidden">
                             <button onclick="document.getElementById('csv-input').click()" class="bg-blue-600/20 text-blue-400 border border-blue-500/30 hover:bg-blue-600 hover:text-white px-2 py-1 rounded text-[10px] font-bold transition"><i class="fa-solid fa-file-csv"></i> CSV</button>
                             <button onclick="resetProductForm()" id="btn-cancel" class="hidden text-[10px] bg-red-500/20 text-red-400 px-3 py-1 rounded border border-red-500/30">Batal</button>
@@ -180,12 +196,9 @@
     <div id="bulk-modal" class="fixed inset-0 bg-black/90 hidden flex items-center justify-center z-50 p-4">
         <div class="glass w-full max-w-xs p-6 rounded-2xl bg-[#0f172a] border border-white/10">
             <h3 class="font-bold text-white mb-2 text-sm text-center">Update Link Massal</h3>
-            <p class="text-[10px] text-gray-400 text-center mb-4">Paste link TikTok baru. Link ini akan diterapkan ke semua produk yang dicentang.</p>
+            <p class="text-[10px] text-gray-400 text-center mb-4">Paste link baru. Link ini akan diterapkan ke semua produk yang dicentang.</p>
             <input type="text" id="inp-bulk-link" placeholder="https://tiktok.com/..." class="w-full bg-black/50 border border-white/10 p-3 rounded-lg text-white text-sm mb-4 outline-none focus:border-emerald-500">
-            <div class="flex justify-end gap-2">
-                <button onclick="document.getElementById('bulk-modal').classList.add('hidden')" class="px-4 py-2 text-gray-400 text-xs hover:text-white">Batal</button>
-                <button onclick="submitBulkLink()" class="px-4 py-2 bg-emerald-600 text-white rounded-lg text-xs font-bold hover:bg-emerald-500">SIMPAN</button>
-            </div>
+            <div class="flex justify-end gap-2"><button onclick="document.getElementById('bulk-modal').classList.add('hidden')" class="px-4 py-2 text-gray-400 text-xs hover:text-white">Batal</button><button onclick="submitBulkLink()" class="px-4 py-2 bg-emerald-600 text-white rounded-lg text-xs font-bold hover:bg-emerald-500">SIMPAN</button></div>
         </div>
     </div>
 
@@ -227,139 +240,42 @@
 
         window.addEventListener('load', async () => { checkLoginSession(); await loadData(); });
 
-        function updateUI() {
-            const catalog = document.getElementById('view-catalog'), admin = document.getElementById('view-admin');
-            const btnLogin = document.getElementById('btn-login-trigger'), userMenu = document.getElementById('user-menu');
-            const roleBadge = document.getElementById('user-role-badge'), btnShare = document.getElementById('btn-share'), btnUserSelect = document.getElementById('btn-user-select');
-
-            catalog.classList.remove('hidden'); admin.classList.add('hidden'); btnLogin.classList.remove('hidden'); userMenu.classList.add('hidden');
-            
-            if (currentUser) {
-                btnLogin.classList.add('hidden'); userMenu.classList.remove('hidden');
-                roleBadge.innerText = currentUser.role;
-                if (currentUser.role === 'admin') {
-                    catalog.classList.add('hidden'); admin.classList.remove('hidden');
-                    roleBadge.className = "text-[9px] font-bold px-2 py-1 rounded bg-red-600 text-white";
-                    btnShare.classList.add('hidden'); btnUserSelect.classList.add('hidden');
-                    currentMode = 'admin'; loadAdminData(); 
-                } else {
-                    roleBadge.className = "text-[9px] font-bold px-2 py-1 rounded bg-emerald-600 text-white";
-                    btnShare.classList.remove('hidden'); btnUserSelect.classList.remove('hidden');
-                    window.location.hash = `/${currentUser.username}`;
-                    document.getElementById('shop-info').classList.remove('hidden');
-                    document.getElementById('shop-owner').innerText = currentUser.username;
-                    currentMode = 'catalog';
-                }
-            }
-        }
-
-        // === BULK MODE LOGIC (DIPERBAIKI) ===
-        function toggleBulkMode() {
-            isBulkMode = !isBulkMode;
-            const bar = document.getElementById('bulk-bar');
-            const btnUser = document.getElementById('btn-user-select');
-            const btnAdmin = document.getElementById('btn-admin-select');
-
-            selectedIds.clear(); updateBulkCount();
-
-            if (isBulkMode) {
-                // Mode Aktif: Tampilkan Bar Bawah
-                bar.classList.remove('hidden');
-                // Ubah tampilan tombol pemicu
-                btnUser.classList.add('bg-red-600', 'border-red-500'); btnUser.innerHTML = '<i class="fa-solid fa-times"></i> Batal';
-                btnAdmin.classList.replace('bg-yellow-600', 'bg-red-600'); btnAdmin.innerHTML = '<i class="fa-solid fa-times"></i> Batal';
-            } else {
-                // Mode Mati: Sembunyikan Bar
-                bar.classList.add('hidden');
-                btnUser.classList.remove('bg-red-600', 'border-red-500'); btnUser.innerHTML = '<i class="fa-solid fa-list-check"></i> Pilih';
-                btnAdmin.classList.replace('bg-red-600', 'bg-yellow-600'); btnAdmin.innerHTML = '<i class="fa-solid fa-check-square"></i> GANTI LINK';
-            }
-            // Refresh tampilan kartu untuk memunculkan/sembunyikan checkbox
-            if(currentMode === 'admin') loadAdminData(); else loadData();
-        }
-
-        function toggleProductSelect(id) {
-            const cardId = currentMode === 'admin' ? `admin-card-${id}` : `user-card-${id}`;
-            const el = document.getElementById(cardId);
-            const chk = el.querySelector('.select-checkbox');
-            
-            if (selectedIds.has(id)) {
-                selectedIds.delete(id);
-                el.classList.remove('is-selected');
-                chk.innerHTML = ''; // Hapus centang
-            } else {
-                selectedIds.add(id);
-                el.classList.add('is-selected');
-                chk.innerHTML = '<i class="fa-solid fa-check text-white text-xs"></i>'; // Tambah centang
-            }
-            updateBulkCount();
-        }
-
-        function updateBulkCount() { document.getElementById('selected-count').innerText = selectedIds.size; }
-        function openBulkLinkModal() { if(selectedIds.size === 0) return alert("Pilih produk dulu!"); document.getElementById('bulk-modal').classList.remove('hidden'); }
-
-        async function submitBulkLink() {
-            const url = document.getElementById('inp-bulk-link').value;
-            if(!url) return alert('Link Kosong');
-            const ids = Array.from(selectedIds);
-            
-            let error;
-            if (currentUser.role === 'admin') {
-                const { error: err } = await sb.from('products').update({ default_link: url }).in('id', ids);
-                error = err;
-            } else {
-                const updates = ids.map(id => ({ affiliator_username: currentUser.username, product_id: id, custom_link: url }));
-                const { error: err } = await sb.from('affiliate_links').upsert(updates, { onConflict: 'affiliator_username, product_id' });
-                error = err;
-            }
-
-            if (!error) {
-                showToast(`Sukses Update ${ids.length} Produk`);
-                document.getElementById('bulk-modal').classList.add('hidden');
-                document.getElementById('inp-bulk-link').value = '';
-                toggleBulkMode();
-            } else alert(error.message);
-        }
-
-        // --- RENDER CARD (Logic Tombol Kecil) ---
-        // Fungsi ini membuat kartu dengan logika: Jika Mode Bulk -> Tampilkan Checkbox, Jika Tidak -> Tampilkan Tombol Aksi Biasa
+        // --- RENDER KARTU (LOGIKA TOMBOL KECIL) ---
         function renderCardHTML(prod, isAdmin) {
-            // Cek apakah produk ini sedang dipilih
             const isSel = selectedIds.has(prod.id) ? 'is-selected' : '';
+            // Isi tombol centang: Jika dipilih ada centang, jika tidak kosong
             const checkContent = selectedIds.has(prod.id) ? '<i class="fa-solid fa-check text-white text-xs"></i>' : '';
             const cardId = isAdmin ? `admin-card-${prod.id}` : `user-card-${prod.id}`;
 
-            // TOMBOL AKSI (Normal Mode)
-            let actionButtons = '';
-            if (!isBulkMode) {
+            // TOMBOL ATAS KANAN:
+            // Jika Bulk Mode -> Tampilkan TOMBOL KECIL untuk memilih
+            // Jika Normal Mode -> Tampilkan Tombol Edit/Delete (Admin) atau Edit Link (User)
+            let topButtons = '';
+            
+            if (isBulkMode) {
+                // Mode Pilih: Tombol Select Kecil
+                topButtons = `
+                    <div class="absolute top-2 right-2 z-30" onclick="event.stopPropagation(); toggleProductSelect(${prod.id})">
+                        <div class="select-btn">${checkContent}</div>
+                    </div>
+                `;
+            } else {
+                // Mode Normal
                 if (isAdmin) {
-                    actionButtons = `
+                    topButtons = `
                         <div class="absolute top-2 right-2 flex gap-1 z-20">
                             <button onclick="editProduct(${prod.id})" class="bg-blue-600 text-white w-7 h-7 rounded shadow flex items-center justify-center"><i class="fa-solid fa-pen text-[10px]"></i></button>
                             <button onclick="deleteProduct(${prod.id})" class="bg-red-600 text-white w-7 h-7 rounded shadow flex items-center justify-center"><i class="fa-solid fa-trash text-[10px]"></i></button>
                         </div>
                     `;
                 } else {
-                    actionButtons = `
+                    topButtons = `
                         <button onclick="openEditLinkModal(${prod.id}, '${prod.name}')" class="absolute top-2 right-2 bg-white text-black w-7 h-7 rounded-full shadow z-20 flex items-center justify-center edit-btn-affiliate"><i class="fa-solid fa-pen text-[10px]"></i></button>
                     `;
                 }
             }
 
-            // TOMBOL CHECKBOX (Bulk Mode)
-            let checkbox = '';
-            if (isBulkMode) {
-                checkbox = `
-                    <div class="absolute top-2 right-2 z-30" onclick="event.stopPropagation(); toggleProductSelect(${prod.id})">
-                        <div class="select-checkbox">${checkContent}</div>
-                    </div>
-                `;
-            }
-
-            // INPUT URUTAN (Hanya Admin)
             const sortInput = isAdmin && !isBulkMode ? `<div class="absolute top-2 left-2 z-20"><input type="number" value="${prod.sort_order||999}" onchange="quickSort(${prod.id}, this.value)" class="w-8 bg-black/80 border border-emerald-500/50 text-center text-emerald-400 text-xs rounded p-1 outline-none font-bold"></div>` : '';
-
-            // TOMBOL BELI (Hanya User & Normal Mode)
             const buyBtn = !isAdmin ? `<button onclick="openDetailPopup(${prod.id})" class="mt-3 w-full bg-emerald-600 text-white text-xs py-2 rounded-lg font-bold">BELI</button>` : '';
 
             return `
@@ -367,8 +283,7 @@
                     <div class="relative w-full aspect-square overflow-hidden bg-black/20">
                         <img src="${prod.image_url || 'https://via.placeholder.com/300'}" class="w-full h-full object-cover">
                         <div class="absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black/80 to-transparent"><span class="inline-block text-[10px] font-bold text-emerald-300 bg-black/60 px-2 py-0.5 rounded border border-emerald-500/30">${prod.product_code || '-'}</span></div>
-                        ${actionButtons}
-                        ${checkbox}
+                        ${topButtons}
                         ${sortInput}
                     </div>
                     <div class="p-3 flex flex-col flex-grow">
@@ -380,14 +295,13 @@
             `;
         }
 
-        // --- LOADERS ---
+        // --- LOAD DATA ---
         async function loadData() {
             const container = document.getElementById('catalog-container');
             let { data: products } = await sb.from('products').select('*').order('sort_order', { ascending: true });
             allProducts = products || [];
             
-            // Custom Link Logic
-            let customLinks = []; let owner = null;
+            let customLinks = [], owner = null;
             if (currentUser && currentUser.role !== 'admin') owner = currentUser.username;
             else if (window.location.hash.startsWith('#/')) owner = window.location.hash.replace('#/', '');
             if (owner) { const { data } = await sb.from('affiliate_links').select('*').eq('affiliator_username', owner); customLinks = data || []; document.getElementById('shop-info').classList.remove('hidden'); document.getElementById('shop-owner').innerText = owner; }
@@ -417,7 +331,85 @@
             });
         }
 
-        // --- CRUD & HELPERS (Minified for brevity but fully functional) ---
+        // --- BULK MODE ---
+        function toggleBulkMode() {
+            isBulkMode = !isBulkMode;
+            const bar = document.getElementById('bulk-bar');
+            const btnUser = document.getElementById('btn-user-select');
+            const btnAdmin = document.getElementById('btn-admin-select');
+            selectedIds.clear(); updateBulkCount();
+
+            if (isBulkMode) {
+                bar.classList.remove('hidden');
+                btnUser.classList.add('bg-red-600', 'border-red-500'); btnUser.innerHTML = '<i class="fa-solid fa-times"></i> Batal';
+                btnAdmin.classList.replace('bg-yellow-600', 'bg-red-600'); btnAdmin.innerHTML = '<i class="fa-solid fa-times"></i> Batal';
+            } else {
+                bar.classList.add('hidden');
+                btnUser.classList.remove('bg-red-600', 'border-red-500'); btnUser.innerHTML = '<i class="fa-solid fa-list-check"></i> Pilih';
+                btnAdmin.classList.replace('bg-red-600', 'bg-yellow-600'); btnAdmin.innerHTML = '<i class="fa-solid fa-check-square"></i> GANTI LINK';
+            }
+            if(currentMode === 'admin') loadAdminData(); else loadData();
+        }
+
+        function toggleProductSelect(id) {
+            const cardId = currentMode === 'admin' ? `admin-card-${id}` : `user-card-${id}`;
+            const el = document.getElementById(cardId);
+            const btn = el.querySelector('.select-btn');
+            
+            if (selectedIds.has(id)) {
+                selectedIds.delete(id);
+                el.classList.remove('is-selected');
+                btn.innerHTML = ''; 
+            } else {
+                selectedIds.add(id);
+                el.classList.add('is-selected');
+                btn.innerHTML = '<i class="fa-solid fa-check text-white text-xs"></i>';
+            }
+            updateBulkCount();
+        }
+
+        function updateBulkCount() { document.getElementById('selected-count').innerText = selectedIds.size; }
+        function openBulkLinkModal() { if(selectedIds.size === 0) return alert("Pilih produk dulu!"); document.getElementById('bulk-modal').classList.remove('hidden'); }
+
+        async function submitBulkLink() {
+            const url = document.getElementById('inp-bulk-link').value;
+            if(!url) return alert('Link Kosong');
+            const ids = Array.from(selectedIds);
+            
+            let error;
+            if (currentUser.role === 'admin') { const { error: err } = await sb.from('products').update({ default_link: url }).in('id', ids); error = err; } 
+            else { const updates = ids.map(id => ({ affiliator_username: currentUser.username, product_id: id, custom_link: url })); const { error: err } = await sb.from('affiliate_links').upsert(updates, { onConflict: 'affiliator_username, product_id' }); error = err; }
+
+            if (!error) { showToast(`Sukses Update ${ids.length} Produk`); document.getElementById('bulk-modal').classList.add('hidden'); document.getElementById('inp-bulk-link').value = ''; toggleBulkMode(); } 
+            else alert(error.message);
+        }
+
+        // --- STANDARD FUNCTIONS (Auth, CRUD, etc) ---
+        function updateUI() {
+            const catalog = document.getElementById('view-catalog'), admin = document.getElementById('view-admin');
+            const btnLogin = document.getElementById('btn-login-trigger'), userMenu = document.getElementById('user-menu');
+            const roleBadge = document.getElementById('user-role-badge'), btnShare = document.getElementById('btn-share'), btnUserSelect = document.getElementById('btn-user-select');
+
+            catalog.classList.remove('hidden'); admin.classList.add('hidden'); btnLogin.classList.remove('hidden'); userMenu.classList.add('hidden');
+            
+            if (currentUser) {
+                btnLogin.classList.add('hidden'); userMenu.classList.remove('hidden');
+                roleBadge.innerText = currentUser.role;
+                if (currentUser.role === 'admin') {
+                    catalog.classList.add('hidden'); admin.classList.remove('hidden');
+                    roleBadge.className = "text-[9px] font-bold px-2 py-1 rounded bg-red-600 text-white";
+                    btnShare.classList.add('hidden'); btnUserSelect.classList.add('hidden');
+                    currentMode = 'admin'; loadAdminData(); 
+                } else {
+                    roleBadge.className = "text-[9px] font-bold px-2 py-1 rounded bg-emerald-600 text-white";
+                    btnShare.classList.remove('hidden'); btnUserSelect.classList.remove('hidden');
+                    window.location.hash = `/${currentUser.username}`;
+                    document.getElementById('shop-info').classList.remove('hidden');
+                    document.getElementById('shop-owner').innerText = currentUser.username;
+                    currentMode = 'catalog';
+                }
+            }
+        }
         function toggleLoginModal() { document.getElementById('login-modal').classList.toggle('hidden'); }
         async function handleLogin(e) { e.preventDefault(); const { data } = await sb.from('affiliators').select('*').eq('username', document.getElementById('login-username').value.toLowerCase()).eq('pin', document.getElementById('login-pin').value).single(); if (data) { currentUser = data; localStorage.setItem('tobako_user', JSON.stringify(data)); toggleLoginModal(); updateUI(); showToast('Login Berhasil'); } else { alert('Gagal login'); } }
         function handleLogout() { if(confirm('Logout?')) { localStorage.removeItem('tobako_user'); location.reload(); } }
